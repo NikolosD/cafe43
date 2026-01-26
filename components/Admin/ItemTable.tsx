@@ -69,7 +69,10 @@ export default function ItemTable({ initialItems, categories }: ItemTableProps) 
     const [isSpicy, setIsSpicy] = useState(false);
     const [isVegan, setIsVegan] = useState(false);
     const [titles, setTitles] = useState({ ru: '', en: '', ge: '' });
+    const [originalTitles, setOriginalTitles] = useState({ ru: '', en: '', ge: '' });
     const [descriptions, setDescriptions] = useState({ ru: '', en: '', ge: '' });
+    const [originalDescriptions, setOriginalDescriptions] = useState({ ru: '', en: '', ge: '' });
+    const [dirtyFields, setDirtyFields] = useState<Set<string>>(new Set());
 
     // Helper to get filename from URL
     const getStoragePath = (url: string | null) => {
@@ -110,16 +113,29 @@ export default function ItemTable({ initialItems, categories }: ItemTableProps) 
             setIsVegan(!!item.is_vegan);
 
             const getTrans = (lang: string) => item.item_translations.find((t: any) => t.lang === lang) || {};
+            const t_ge = getTrans('ge');
+
             setTitles({
                 ru: getTrans('ru').title || '',
                 en: getTrans('en').title || '',
-                ge: getTrans('ge').title || ''
+                ge: t_ge.title || ''
+            });
+            setOriginalTitles({
+                ru: getTrans('ru').title || '',
+                en: getTrans('en').title || '',
+                ge: t_ge.title || ''
             });
             setDescriptions({
                 ru: getTrans('ru').description || '',
                 en: getTrans('en').description || '',
-                ge: getTrans('ge').description || ''
+                ge: t_ge.description || ''
             });
+            setOriginalDescriptions({
+                ru: getTrans('ru').description || '',
+                en: getTrans('en').description || '',
+                ge: t_ge.description || ''
+            });
+            setDirtyFields(new Set());
         } else {
             setCurrentId(null);
             setCategoryId(categories[0]?.id || '');
@@ -133,7 +149,10 @@ export default function ItemTable({ initialItems, categories }: ItemTableProps) 
             setIsSpicy(false);
             setIsVegan(false);
             setTitles({ ru: '', en: '', ge: '' });
+            setOriginalTitles({ ru: '', en: '', ge: '' });
             setDescriptions({ ru: '', en: '', ge: '' });
+            setOriginalDescriptions({ ru: '', en: '', ge: '' });
+            setDirtyFields(new Set());
         }
         setIsOpen(true);
     };
@@ -183,40 +202,59 @@ export default function ItemTable({ initialItems, categories }: ItemTableProps) 
         }
         setLoading(true);
         try {
-            // Auto-translate if empty
+            // Auto-translate if Georgian fields changed AND targets aren't dirty
             const newTitles = { ...titles };
             const newDescriptions = { ...descriptions };
 
-            // Translate Titles
-            if (!newTitles.ru.trim()) {
-                const res = await fetch('/api/translate', {
-                    method: 'POST',
-                    body: JSON.stringify({ text: titles.ge, target: 'ru', format: 'title' }),
-                }).then(r => r.json());
-                if (res.text) newTitles.ru = res.text;
-            }
-            if (!newTitles.en.trim()) {
-                const res = await fetch('/api/translate', {
-                    method: 'POST',
-                    body: JSON.stringify({ text: titles.ge, target: 'en', format: 'title' }),
-                }).then(r => r.json());
-                if (res.text) newTitles.en = res.text;
-            }
+            const geTitleChanged = titles.ge !== originalTitles.ge;
+            const geDescChanged = descriptions.ge !== originalDescriptions.ge;
 
-            // Translate Descriptions
-            if (descriptions.ge.trim()) {
-                if (!newDescriptions.ru.trim()) {
+            // Handle Titles
+            if (geTitleChanged) {
+                if (!dirtyFields.has('title_ru') && (!titles.ru || titles.ru === originalTitles.ru)) {
                     const res = await fetch('/api/translate', {
                         method: 'POST',
-                        body: JSON.stringify({ text: descriptions.ge, target: 'ru' }),
+                        body: JSON.stringify({ text: titles.ge, target: 'ru', format: 'title' }),
                     }).then(r => r.json());
+                    if (res.text) newTitles.ru = res.text;
+                }
+                if (!dirtyFields.has('title_en') && (!titles.en || titles.en === originalTitles.en)) {
+                    const res = await fetch('/api/translate', {
+                        method: 'POST',
+                        body: JSON.stringify({ text: titles.ge, target: 'en', format: 'title' }),
+                    }).then(r => r.json());
+                    if (res.text) newTitles.en = res.text;
+                }
+            } else {
+                // Initial creation fallback
+                if (!newTitles.ru.trim()) {
+                    const res = await fetch('/api/translate', { method: 'POST', body: JSON.stringify({ text: titles.ge, target: 'ru', format: 'title' }) }).then(r => r.json());
+                    if (res.text) newTitles.ru = res.text;
+                }
+                if (!newTitles.en.trim()) {
+                    const res = await fetch('/api/translate', { method: 'POST', body: JSON.stringify({ text: titles.ge, target: 'en', format: 'title' }) }).then(r => r.json());
+                    if (res.text) newTitles.en = res.text;
+                }
+            }
+
+            // Handle Descriptions
+            if (geDescChanged && descriptions.ge.trim()) {
+                if (!dirtyFields.has('description_ru') && (!descriptions.ru || descriptions.ru === originalDescriptions.ru)) {
+                    const res = await fetch('/api/translate', { method: 'POST', body: JSON.stringify({ text: descriptions.ge, target: 'ru' }) }).then(r => r.json());
+                    if (res.text) newDescriptions.ru = res.text;
+                }
+                if (!dirtyFields.has('description_en') && (!descriptions.en || descriptions.en === originalDescriptions.en)) {
+                    const res = await fetch('/api/translate', { method: 'POST', body: JSON.stringify({ text: descriptions.ge, target: 'en' }) }).then(r => r.json());
+                    if (res.text) newDescriptions.en = res.text;
+                }
+            } else if (descriptions.ge.trim()) {
+                // Initial creation fallback
+                if (!newDescriptions.ru.trim()) {
+                    const res = await fetch('/api/translate', { method: 'POST', body: JSON.stringify({ text: descriptions.ge, target: 'ru' }) }).then(r => r.json());
                     if (res.text) newDescriptions.ru = res.text;
                 }
                 if (!newDescriptions.en.trim()) {
-                    const res = await fetch('/api/translate', {
-                        method: 'POST',
-                        body: JSON.stringify({ text: descriptions.ge, target: 'en' }),
-                    }).then(r => r.json());
+                    const res = await fetch('/api/translate', { method: 'POST', body: JSON.stringify({ text: descriptions.ge, target: 'en' }) }).then(r => r.json());
                     if (res.text) newDescriptions.en = res.text;
                 }
             }
@@ -351,7 +389,7 @@ export default function ItemTable({ initialItems, categories }: ItemTableProps) 
                                     <TableHead className="text-zinc-600">{t('category')}</TableHead>
                                     <TableHead className="text-zinc-900 font-medium">Price</TableHead>
                                     <TableHead className="w-[100px] text-zinc-600">{t('status')}</TableHead>
-                                    <TableHead className="text-right w-[100px]">Actions</TableHead>
+                                    <TableHead className="text-right w-[100px]">{t('actions')}</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -516,11 +554,27 @@ export default function ItemTable({ initialItems, categories }: ItemTableProps) 
                                 </h3>
                                 <div className="space-y-2">
                                     <Label>Title <span className="text-red-500">*</span></Label>
-                                    <Input value={titles.ge} onChange={e => setTitles({ ...titles, ge: e.target.value })} className="font-medium text-lg" placeholder={t('dish_name_placeholder')} />
+                                    <Input
+                                        value={titles.ge}
+                                        onChange={e => {
+                                            setTitles({ ...titles, ge: e.target.value });
+                                            setDirtyFields(prev => new Set(prev).add('title_ge'));
+                                        }}
+                                        className="font-medium text-lg"
+                                        placeholder={t('dish_name_placeholder')}
+                                    />
                                 </div>
                                 <div className="space-y-2">
                                     <Label>Description</Label>
-                                    <Textarea value={descriptions.ge} onChange={e => setDescriptions({ ...descriptions, ge: e.target.value })} className="min-h-[80px]" placeholder={t('ingredients_placeholder')} />
+                                    <Textarea
+                                        value={descriptions.ge}
+                                        onChange={e => {
+                                            setDescriptions({ ...descriptions, ge: e.target.value });
+                                            setDirtyFields(prev => new Set(prev).add('description_ge'));
+                                        }}
+                                        className="min-h-[80px]"
+                                        placeholder={t('ingredients_placeholder')}
+                                    />
                                 </div>
                             </div>
 

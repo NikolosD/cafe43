@@ -74,6 +74,7 @@
         "copied": "Copied!",
         "download_png": "Download PNG",
         "preview": "Preview",
-        "scan_test": "Scan to test the link"
+        "scan_test": "Scan to test the link",
+        "actions": "Actions"
     }
 }

@@ -32,7 +32,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Label } from '@/components/ui/label';
-import { Trash2, Pencil, Plus, Layers, Search, Filter, ArrowUpDown, Upload, Image as ImageIcon, X } from 'lucide-react';
+import { Trash2, Pencil, Plus, Layers, Search, Filter, ArrowUpDown, Upload, Image as ImageIcon, X, Wand2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
@@ -60,6 +60,8 @@ export default function CategoryTable({ initialCategories }: CategoryTableProps)
     const [sort, setSort] = useState(10);
     const [isActive, setIsActive] = useState(true);
     const [titles, setTitles] = useState({ ru: '', en: '', ge: '' });
+    const [originalTitles, setOriginalTitles] = useState({ ru: '', en: '', ge: '' });
+    const [dirtyFields, setDirtyFields] = useState<Set<string>>(new Set());
     const [imageUrl, setImageUrl] = useState<string | null>(null);
     const [originalImageUrl, setOriginalImageUrl] = useState<string | null>(null);
 
@@ -102,6 +104,8 @@ export default function CategoryTable({ initialCategories }: CategoryTableProps)
             const en = category.category_translations.find((t: any) => t.lang === 'en')?.title || '';
             const ge = category.category_translations.find((t: any) => t.lang === 'ge')?.title || '';
             setTitles({ ru, en, ge });
+            setOriginalTitles({ ru, en, ge });
+            setDirtyFields(new Set());
             setImageUrl(category.image_url || null);
             setOriginalImageUrl(category.image_url || null);
         } else {
@@ -109,6 +113,8 @@ export default function CategoryTable({ initialCategories }: CategoryTableProps)
             setSort(categories.length * 10 + 10);
             setIsActive(true);
             setTitles({ ru: '', en: '', ge: '' });
+            setOriginalTitles({ ru: '', en: '', ge: '' });
+            setDirtyFields(new Set());
             setImageUrl(null);
             setOriginalImageUrl(null);
         }
@@ -153,6 +159,31 @@ export default function CategoryTable({ initialCategories }: CategoryTableProps)
         }
     };
 
+    const handleTranslate = async (target: 'ru' | 'en') => {
+        if (!titles.ge.trim()) {
+            alert(t('georgian_required'));
+            return;
+        }
+        setLoading(true);
+        try {
+            const res = await fetch('/api/translate', {
+                method: 'POST',
+                body: JSON.stringify({ text: titles.ge, target, format: 'title' }),
+            }).then(r => r.json());
+
+            if (res.text) {
+                setTitles(prev => ({ ...prev, [target]: res.text }));
+            } else {
+                alert('Translation failed');
+            }
+        } catch (error) {
+            console.error(error);
+            alert('Error calling translation service');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const handleSave = async () => {
         if (!titles.ge.trim()) {
             alert(t('georgian_required'));
@@ -160,22 +191,44 @@ export default function CategoryTable({ initialCategories }: CategoryTableProps)
         }
         setLoading(true);
         try {
-            // Auto-translate if empty
+            // Auto-translate if Georgian title changed AND target fields aren't dirty
             const newTitles = { ...titles };
-            if (!newTitles.ru.trim()) {
-                const res = await fetch('/api/translate', {
-                    method: 'POST',
-                    body: JSON.stringify({ text: titles.ge, target: 'ru', format: 'title' }),
-                }).then(r => r.json());
-                if (res.text) newTitles.ru = res.text;
+            const geChanged = titles.ge !== originalTitles.ge;
+
+            if (geChanged) {
+                if (!dirtyFields.has('ru') && (!titles.ru || titles.ru === originalTitles.ru)) {
+                    const res = await fetch('/api/translate', {
+                        method: 'POST',
+                        body: JSON.stringify({ text: titles.ge, target: 'ru', format: 'title' }),
+                    }).then(r => r.json());
+                    if (res.text) newTitles.ru = res.text;
+                }
+                if (!dirtyFields.has('en') && (!titles.en || titles.en === originalTitles.en)) {
+                    const res = await fetch('/api/translate', {
+                        method: 'POST',
+                        body: JSON.stringify({ text: titles.ge, target: 'en', format: 'title' }),
+                    }).then(r => r.json());
+                    if (res.text) newTitles.en = res.text;
+                }
             }
-            if (!newTitles.en.trim()) {
-                const res = await fetch('/api/translate', {
-                    method: 'POST',
-                    body: JSON.stringify({ text: titles.ge, target: 'en', format: 'title' }),
-                }).then(r => r.json());
-                if (res.text) newTitles.en = res.text;
+            // Fallback for new items (empty targets)
+            else {
+                if (!newTitles.ru.trim()) {
+                    const res = await fetch('/api/translate', {
+                        method: 'POST',
+                        body: JSON.stringify({ text: titles.ge, target: 'ru', format: 'title' }),
+                    }).then(r => r.json());
+                    if (res.text) newTitles.ru = res.text;
+                }
+                if (!newTitles.en.trim()) {
+                    const res = await fetch('/api/translate', {
+                        method: 'POST',
+                        body: JSON.stringify({ text: titles.ge, target: 'en', format: 'title' }),
+                    }).then(r => r.json());
+                    if (res.text) newTitles.en = res.text;
+                }
             }
+
             setTitles(newTitles);
 
             const categoryData = {
@@ -294,7 +347,7 @@ export default function CategoryTable({ initialCategories }: CategoryTableProps)
                                     <TableHead className="font-semibold text-zinc-900">Title (GE)</TableHead>
                                     <TableHead className="font-semibold text-zinc-600">Other Languages</TableHead>
                                     <TableHead className="w-[100px] font-semibold text-zinc-600">{t('status')}</TableHead>
-                                    <TableHead className="text-right w-[100px]">Actions</TableHead>
+                                    <TableHead className="text-right w-[100px]">{t('actions')}</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -432,25 +485,56 @@ export default function CategoryTable({ initialCategories }: CategoryTableProps)
                             <Input
                                 placeholder={t('category_title_ge')}
                                 value={titles.ge}
-                                onChange={(e) => setTitles({ ...titles, ge: e.target.value })}
+                                onChange={(e) => {
+                                    setTitles({ ...titles, ge: e.target.value });
+                                    setDirtyFields(prev => new Set(prev).add('ge'));
+                                }}
                                 className="font-medium"
                             />
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label className="text-xs uppercase text-muted-foreground font-semibold">{t('russian')}</Label>
-                                <Input
-                                    placeholder={t('title_ru')}
-                                    value={titles.ru}
-                                    onChange={(e) => setTitles({ ...titles, ru: e.target.value })}
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label className="text-xs uppercase text-muted-foreground font-semibold">{t('english')}</Label>
+                                <Label className="text-xs uppercase text-muted-foreground font-semibold flex items-center justify-between">
+                                    🇺🇸 {t('english')}
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-6 w-6 text-zinc-400 hover:text-blue-500"
+                                        onClick={() => handleTranslate('en')}
+                                        disabled={loading}
+                                    >
+                                        <Wand2 className="h-3 w-3" />
+                                    </Button>
+                                </Label>
                                 <Input
                                     placeholder={t('title_en')}
                                     value={titles.en}
-                                    onChange={(e) => setTitles({ ...titles, en: e.target.value })}
+                                    onChange={(e) => {
+                                        setTitles({ ...titles, en: e.target.value });
+                                        setDirtyFields(prev => new Set(prev).add('en'));
+                                    }}
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label className="text-xs uppercase text-muted-foreground font-semibold flex items-center justify-between">
+                                    🇷🇺 {t('russian')}
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-6 w-6 text-zinc-400 hover:text-blue-500"
+                                        onClick={() => handleTranslate('ru')}
+                                        disabled={loading}
+                                    >
+                                        <Wand2 className="h-3 w-3" />
+                                    </Button>
+                                </Label>
+                                <Input
+                                    placeholder={t('title_ru')}
+                                    value={titles.ru}
+                                    onChange={(e) => {
+                                        setTitles({ ...titles, ru: e.target.value });
+                                        setDirtyFields(prev => new Set(prev).add('ru'));
+                                    }}
                                 />
                             </div>
                         </div>

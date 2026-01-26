@@ -11,15 +11,27 @@ export default function LocaleInitializer() {
     const [checked, setChecked] = useState(false);
 
     useEffect(() => {
-        if (checked) return;
-
         const savedLocale = localStorage.getItem('NEXT_LOCALE');
 
-        // Only redirect if we have a saved locale, it's different from current,
-        // and we are NOT on a specific table/admin page where language might be forced?
-        // Actually, just redirect if it's different.
-        if (savedLocale && savedLocale !== locale && (savedLocale === 'ru' || savedLocale === 'en' || savedLocale === 'ge')) {
-            router.replace(pathname, { locale: savedLocale as "ru" | "en" | "ge" });
+        if (!checked) {
+            // Initial load check: only auto-redirect if we are on the default locale 
+            // and the user has a different preferred locale saved.
+            // This prevents "fighting" during history navigation.
+            if (savedLocale && savedLocale !== locale && (savedLocale === 'ru' || savedLocale === 'en' || savedLocale === 'ge')) {
+                if (locale === 'ge') {
+                    router.replace(pathname, { locale: savedLocale as "ru" | "en" | "ge" });
+                } else {
+                    // If they are on a non-default locale (e.g. from a direct link or history),
+                    // respect the URL and update their preference.
+                    localStorage.setItem('NEXT_LOCALE', locale);
+                }
+            }
+        } else {
+            // Subsequent changes (e.g. user clicking a link or hitting back)
+            // Just sync the storage with the URL.
+            if (savedLocale !== locale) {
+                localStorage.setItem('NEXT_LOCALE', locale);
+            }
         }
 
         setChecked(true);

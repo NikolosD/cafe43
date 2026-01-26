@@ -20,7 +20,7 @@ export default function QRGeneratorPage() {
     const qrRef = useRef<HTMLDivElement>(null);
 
     const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || (typeof window !== 'undefined' ? window.location.origin : '');
-    const qrUrl = `${baseUrl}/${language}${tableNumber ? `?table=${tableNumber}` : ''}`;
+    const qrUrl = `${baseUrl}/${language}/menu${tableNumber ? `?table=${tableNumber}` : ''}`;
 
     const handleCopy = async () => {
         try {
