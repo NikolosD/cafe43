@@ -132,7 +132,7 @@ export async function adminGetAllItems(supabase: SupabaseClient) {
         .select(`
       *,
       item_translations(lang, title, description),
-      categories(id, category_translations(title))
+      categories(id, category_translations(lang, title))
     `)
         .order('sort', { ascending: true });
 

@@ -75,6 +75,9 @@
         "download_png": "Download PNG",
         "preview": "Preview",
         "scan_test": "Scan to test the link",
-        "actions": "Actions"
+        "actions": "Actions",
+        "dish_title": "Title",
+        "price": "Price",
+        "other_languages": "Other Languages"
     }
 }

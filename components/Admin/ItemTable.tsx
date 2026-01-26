@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useLocale } from 'next-intl';
 import { createClient } from '@/lib/supabase/client';
 import { adminUpsertItem, adminDeleteItem } from '@/lib/db';
 import {
@@ -44,6 +45,7 @@ interface ItemTableProps {
 
 export default function ItemTable({ initialItems, categories }: ItemTableProps) {
     const t = useTranslations('Admin');
+    const locale = useLocale();
     const supabase = createClient();
     const router = useRouter();
     const [items, setItems] = useState(initialItems);
@@ -351,7 +353,9 @@ export default function ItemTable({ initialItems, categories }: ItemTableProps) 
                         <SelectContent>
                             <SelectItem value="all">{t('all_categories')}</SelectItem>
                             {categories.map(c => {
-                                const title = c.category_translations.find((t: any) => t.lang === 'ge')?.title || c.category_translations[0]?.title;
+                                const title = c.category_translations.find((t: any) => t.lang === locale)?.title ||
+                                    c.category_translations.find((t: any) => t.lang === 'ge')?.title ||
+                                    c.category_translations[0]?.title;
                                 return <SelectItem key={c.id} value={c.id}>{title}</SelectItem>
                             })}
                         </SelectContent>
@@ -385,17 +389,22 @@ export default function ItemTable({ initialItems, categories }: ItemTableProps) 
                                 <TableRow>
                                     <TableHead className="w-[80px]">{t('dish_image')}</TableHead>
                                     <TableHead className="w-[80px] text-zinc-600">{t('sort')}</TableHead>
-                                    <TableHead className="text-zinc-900 font-semibold">Title (GE)</TableHead>
+                                    <TableHead className="text-zinc-900 font-semibold">{t('dish_title')}</TableHead>
                                     <TableHead className="text-zinc-600">{t('category')}</TableHead>
-                                    <TableHead className="text-zinc-900 font-medium">Price</TableHead>
+                                    <TableHead className="text-zinc-900 font-medium">{t('price')}</TableHead>
                                     <TableHead className="w-[100px] text-zinc-600">{t('status')}</TableHead>
                                     <TableHead className="text-right w-[100px]">{t('actions')}</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {filteredItems.map((item) => {
-                                    const ge = item.item_translations.find((t: any) => t.lang === 'ge')?.title;
-                                    const catTitle = item.categories?.category_translations?.find((t: any) => t.lang === 'ge')?.title || item.categories?.category_translations?.[0]?.title || 'Unknown';
+                                    const itemTitle = item.item_translations.find((t: any) => t.lang === locale)?.title ||
+                                        item.item_translations.find((t: any) => t.lang === 'ge')?.title ||
+                                        item.item_translations[0]?.title;
+                                    const catTranslations = item.categories?.category_translations || [];
+                                    const catTitle = catTranslations.find((t: any) => t.lang === locale)?.title ||
+                                        catTranslations.find((t: any) => t.lang === 'ge')?.title ||
+                                        catTranslations[0]?.title || 'Unknown';
 
                                     return (
                                         <TableRow key={item.id} className="hover:bg-zinc-50/60 transition-colors group">
@@ -411,7 +420,7 @@ export default function ItemTable({ initialItems, categories }: ItemTableProps) 
                                                 )}
                                             </TableCell>
                                             <TableCell className="text-zinc-500">{item.sort}</TableCell>
-                                            <TableCell className="font-medium text-zinc-900">{ge || <span className="text-red-400 font-normal text-xs">No translation</span>}</TableCell>
+                                            <TableCell className="font-medium text-zinc-900">{itemTitle || <span className="text-red-400 font-normal text-xs">No translation</span>}</TableCell>
                                             <TableCell className="text-zinc-600 text-sm">{catTitle}</TableCell>
                                             <TableCell className="font-semibold text-zinc-900">{item.price} ₾</TableCell>
                                             <TableCell>

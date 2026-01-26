@@ -75,6 +75,9 @@
         "download_png": "PNG ჩამოტვირთვა",
         "preview": "გადახედვა",
         "scan_test": "დაასკანერეთ შესმოწმებლად",
-        "actions": "მოქმედებები"
+        "actions": "მოქმედებები",
+        "dish_title": "სახელი",
+        "price": "ფასი",
+        "other_languages": "სხვა ენები"
     }
 }

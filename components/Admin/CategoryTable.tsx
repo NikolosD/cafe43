@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useLocale } from 'next-intl';
 import { createClient } from '@/lib/supabase/client';
 import { adminUpsertCategory, adminDeleteCategory } from '@/lib/db';
 import {
@@ -43,6 +44,7 @@ interface CategoryTableProps {
 
 export default function CategoryTable({ initialCategories }: CategoryTableProps) {
     const t = useTranslations('Admin');
+    const locale = useLocale();
     const supabase = createClient();
     const router = useRouter();
     const [categories, setCategories] = useState(initialCategories);
@@ -344,8 +346,8 @@ export default function CategoryTable({ initialCategories }: CategoryTableProps)
                                 <TableRow>
                                     <TableHead className="w-[80px] font-semibold text-zinc-600">{t('sort')}</TableHead>
                                     <TableHead className="w-[100px] font-semibold text-zinc-900">{t('dish_image')}</TableHead>
-                                    <TableHead className="font-semibold text-zinc-900">Title (GE)</TableHead>
-                                    <TableHead className="font-semibold text-zinc-600">Other Languages</TableHead>
+                                    <TableHead className="font-semibold text-zinc-900">{t('dish_title')}</TableHead>
+                                    <TableHead className="font-semibold text-zinc-600">{t('other_languages')}</TableHead>
                                     <TableHead className="w-[100px] font-semibold text-zinc-600">{t('status')}</TableHead>
                                     <TableHead className="text-right w-[100px]">{t('actions')}</TableHead>
                                 </TableRow>
@@ -355,6 +357,9 @@ export default function CategoryTable({ initialCategories }: CategoryTableProps)
                                     const ru = category.category_translations.find((t: any) => t.lang === 'ru')?.title;
                                     const en = category.category_translations.find((t: any) => t.lang === 'en')?.title;
                                     const ge = category.category_translations.find((t: any) => t.lang === 'ge')?.title;
+                                    const title = category.category_translations.find((t: any) => t.lang === locale)?.title ||
+                                        ge ||
+                                        category.category_translations[0]?.title;
 
                                     return (
                                         <TableRow key={category.id} className="hover:bg-zinc-50/60 transition-colors group">
@@ -368,7 +373,7 @@ export default function CategoryTable({ initialCategories }: CategoryTableProps)
                                                     )}
                                                 </div>
                                             </TableCell>
-                                            <TableCell className="font-bold text-zinc-900 text-base">{ge || <span className="text-red-400 text-sm font-normal">No translation</span>}</TableCell>
+                                            <TableCell className="font-bold text-zinc-900 text-base">{title || <span className="text-red-400 text-sm font-normal">No translation</span>}</TableCell>
                                             <TableCell>
                                                 <div className="flex flex-col gap-1 text-sm">
                                                     {ru && <span className="inline-flex items-center text-zinc-600"><span className="w-5 text-[10px] font-bold text-zinc-400 uppercase mr-1">RU</span> {ru}</span>}

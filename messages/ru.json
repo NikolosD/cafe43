@@ -75,6 +75,9 @@
         "download_png": "Скачать PNG",
         "preview": "Предпросмотр",
         "scan_test": "Отсканируйте для проверки",
-        "actions": "Действия"
+        "actions": "Действия",
+        "dish_title": "Название",
+        "price": "Цена",
+        "other_languages": "Другие языки"
     }
 }
