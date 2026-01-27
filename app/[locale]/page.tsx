@@ -45,24 +45,6 @@ export default function LanguageSplashPage() {
 
                     <Link
                         href="/menu"
-                        locale="ru"
-                        onClick={() => handleLocaleSelect('ru')}
-                        className="group relative flex items-center justify-between p-6 bg-white/80 border border-zinc-200 shadow-md rounded-3xl hover:bg-white hover:shadow-lg transition-all active:scale-[0.98]"
-                    >
-                        <div className="flex items-center gap-4">
-                            <span className="text-3xl">🇷🇺</span>
-                            <div className="text-left">
-                                <p className="font-bold text-lg text-black">Русский</p>
-                                <p className="text-xs text-zinc-500 font-medium">Russian</p>
-                            </div>
-                        </div>
-                        <div className="w-8 h-8 rounded-full border border-zinc-200 flex items-center justify-center group-hover:bg-black group-hover:text-white transition-colors">
-                            <ChevronRight className="w-5 h-5" />
-                        </div>
-                    </Link>
-
-                    <Link
-                        href="/menu"
                         locale="en"
                         onClick={() => handleLocaleSelect('en')}
                         className="group relative flex items-center justify-between p-6 bg-white/80 border border-zinc-200 shadow-md rounded-3xl hover:bg-white hover:shadow-lg transition-all active:scale-[0.98]"
@@ -72,6 +54,24 @@ export default function LanguageSplashPage() {
                             <div className="text-left">
                                 <p className="font-bold text-lg text-black">English</p>
                                 <p className="text-xs text-zinc-500 font-medium">English</p>
+                            </div>
+                        </div>
+                        <div className="w-8 h-8 rounded-full border border-zinc-200 flex items-center justify-center group-hover:bg-black group-hover:text-white transition-colors">
+                            <ChevronRight className="w-5 h-5" />
+                        </div>
+                    </Link>
+
+                    <Link
+                        href="/menu"
+                        locale="ru"
+                        onClick={() => handleLocaleSelect('ru')}
+                        className="group relative flex items-center justify-between p-6 bg-white/80 border border-zinc-200 shadow-md rounded-3xl hover:bg-white hover:shadow-lg transition-all active:scale-[0.98]"
+                    >
+                        <div className="flex items-center gap-4">
+                            <span className="text-3xl">🇷🇺</span>
+                            <div className="text-left">
+                                <p className="font-bold text-lg text-black">Русский</p>
+                                <p className="text-xs text-zinc-500 font-medium">Russian</p>
                             </div>
                         </div>
                         <div className="w-8 h-8 rounded-full border border-zinc-200 flex items-center justify-center group-hover:bg-black group-hover:text-white transition-colors">

@@ -22,9 +22,9 @@ export default function LanguageSwitcher() {
                 <SelectValue placeholder="Lang" />
             </SelectTrigger>
             <SelectContent align="end" className="rounded-xl border-black/5 shadow-lg min-w-[120px]">
-                <SelectItem value="ru">Русский</SelectItem>
-                <SelectItem value="en">English</SelectItem>
                 <SelectItem value="ge">ქართული</SelectItem>
+                <SelectItem value="en">English</SelectItem>
+                <SelectItem value="ru">Русский</SelectItem>
             </SelectContent>
         </Select>
     );
