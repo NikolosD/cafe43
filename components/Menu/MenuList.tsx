@@ -71,7 +71,7 @@ export default function MenuList({ menu }: { menu: any[] }) {
                     />
                 ) : (
                     // Main Categories Grid
-                    <div className="grid grid-cols-2 gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <div className="flex flex-col gap-5 animate-in fade-in slide-in-from-bottom-4 duration-500">
                         {menu.map((category) => (
                             <button
                                 key={category.id}
@@ -81,28 +81,35 @@ export default function MenuList({ menu }: { menu: any[] }) {
                                     router.push(`${pathname}?${params.toString()}`);
                                     window.scrollTo({ top: 0, behavior: 'instant' });
                                 }}
-                                className="group relative aspect-[4/5] rounded-3xl overflow-hidden bg-zinc-100 shadow-sm transition-all hover:shadow-md hover:-translate-y-1"
+                                className="group relative flex h-32 sm:h-44 w-full bg-white rounded-[2rem] sm:rounded-[2.5rem] overflow-hidden shadow-sm border border-black/[0.03] transition-all hover:shadow-md hover:-translate-y-1 active:scale-[0.98]"
                             >
-                                {category.image_url ? (
-                                    <Image
-                                        src={category.image_url}
-                                        alt={category.title || "Category"}
-                                        fill
-                                        sizes="(max-width: 768px) 50vw, 33vw"
-                                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                                    />
-                                ) : (
-                                    <div className="absolute inset-0 flex items-center justify-center bg-zinc-100 text-zinc-300">
-                                        <Search className="w-10 h-10 opacity-20" />
-                                    </div>
-                                )}
-                                {category.title && (
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-5 text-left">
-                                        <h3 className="text-white font-bold text-lg leading-tight uppercase tracking-wide">
-                                            {category.title}
-                                        </h3>
-                                    </div>
-                                )}
+                                {/* Content Area */}
+                                <div className="flex-[1.2] flex flex-col justify-center px-5 sm:px-8 text-left z-10">
+                                    <h3 className="text-zinc-900 font-extrabold text-lg sm:text-2xl leading-tight uppercase tracking-tight">
+                                        {category.title}
+                                    </h3>
+                                </div>
+
+                                {/* Image Area */}
+                                <div className="relative flex-1 h-full overflow-hidden">
+                                    {category.image_url ? (
+                                        <div className="absolute inset-0 w-full h-full">
+                                            <Image
+                                                src={category.image_url}
+                                                alt={category.title || "Category"}
+                                                fill
+                                                sizes="(max-width: 768px) 50vw, 33vw"
+                                                className="object-cover transition-transform duration-700 group-hover:scale-110"
+                                            />
+                                            {/* Premium Gradient Fade */}
+                                            <div className="absolute inset-y-0 left-0 w-24 sm:w-32 bg-gradient-to-r from-white via-white/40 to-transparent z-10" />
+                                        </div>
+                                    ) : (
+                                        <div className="absolute inset-0 flex items-center justify-center bg-zinc-50 text-zinc-200">
+                                            <Search className="w-8 sm:w-12 h-8 sm:h-12 opacity-10" />
+                                        </div>
+                                    )}
+                                </div>
                             </button>
                         ))}
                     </div>

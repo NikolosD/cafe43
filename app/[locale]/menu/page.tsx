@@ -17,9 +17,12 @@ export default async function MenuPage({
     const settings = await getSettings(supabase);
 
     return (
-        <div className="min-h-screen bg-slate-50/50 flex flex-col">
+        <div className="min-h-screen bg-[#f8f8f8] flex flex-col relative">
+            {/* Marble texture overlay effect */}
+            <div className="absolute inset-0 opacity-[0.03] pointer-events-none grayscale" style={{ backgroundImage: 'url("https://www.transparenttextures.com/patterns/marble-white.png")' }} />
+
             <MenuHeader />
-            <main className="py-6 flex-grow">
+            <main className="py-6 flex-grow relative z-10">
                 <MenuList menu={menu} />
             </main>
             <MenuFooter settings={settings} />
