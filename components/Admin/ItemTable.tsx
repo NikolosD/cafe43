@@ -46,6 +46,7 @@ import {
     useSensors,
     DragEndEvent
 } from '@dnd-kit/core';
+import imageCompression from 'browser-image-compression';
 import {
     arrayMove,
     SortableContext,
@@ -267,7 +268,24 @@ export default function ItemTable({ initialItems, categories }: ItemTableProps) 
                 throw new Error('You must select an image to upload.');
             }
 
-            const file = event.target.files[0];
+            let file = event.target.files[0];
+
+            // Image compression options
+            const options = {
+                maxSizeMB: 0.8, // Target size under 1MB
+                maxWidthOrHeight: 1200,
+                useWebWorker: true
+            };
+
+            try {
+                const compressedFile = await imageCompression(file, options);
+                file = compressedFile;
+                console.log(`Original size: ${event.target.files[0].size / 1024 / 1024}MB, Compressed size: ${file.size / 1024 / 1024}MB`);
+            } catch (error) {
+                console.error("Compression error:", error);
+                // Continue with original file if compression fails
+            }
+
             const fileExt = file.name.split('.').pop();
             const fileName = `${Math.random()}.${fileExt}`;
             const filePath = `${fileName}`;

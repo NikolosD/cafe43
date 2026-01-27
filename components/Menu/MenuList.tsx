@@ -74,9 +74,11 @@ export default function MenuList({ menu }: { menu: any[] }) {
                                 className="group relative aspect-[4/5] rounded-3xl overflow-hidden bg-zinc-100 shadow-sm transition-all hover:shadow-md hover:-translate-y-1"
                             >
                                 {category.image_url ? (
-                                    <img
+                                    <Image
                                         src={category.image_url}
                                         alt={category.title}
+                                        fill
+                                        sizes="(max-width: 768px) 50vw, 33vw"
                                         className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                                     />
                                 ) : (

@@ -11,6 +11,7 @@ import { X, Flame, Leaf, Sparkles, Scale } from "lucide-react";
 import { Item } from "@/lib/db";
 import { cn } from "@/lib/utils";
 import { useTranslations } from 'next-intl';
+import Image from 'next/image';
 
 interface ItemDetailSheetProps {
     item: Item | null;
@@ -37,9 +38,12 @@ export default function ItemDetailSheet({ item, isOpen, onClose }: ItemDetailShe
                     {/* Hero Image */}
                     <div className="relative aspect-square sm:aspect-video w-full bg-zinc-100 shrink-0">
                         {item.image_url ? (
-                            <img
-                                src={item.image_url}
+                            <Image
+                                src={item.image_url!}
                                 alt={item.title}
+                                fill
+                                priority
+                                sizes="(max-width: 640px) 100vw, 640px"
                                 className="w-full h-full object-cover"
                             />
                         ) : (
