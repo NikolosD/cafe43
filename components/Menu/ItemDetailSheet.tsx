@@ -40,7 +40,7 @@ export default function ItemDetailSheet({ item, isOpen, onClose }: ItemDetailShe
                         {item.image_url ? (
                             <Image
                                 src={item.image_url!}
-                                alt={item.title}
+                                alt={item.title || "Dish"}
                                 fill
                                 priority
                                 sizes="(max-width: 640px) 100vw, 640px"

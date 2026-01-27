@@ -76,7 +76,7 @@ export default function MenuList({ menu }: { menu: any[] }) {
                                 {category.image_url ? (
                                     <Image
                                         src={category.image_url}
-                                        alt={category.title}
+                                        alt={category.title || "Category"}
                                         fill
                                         sizes="(max-width: 768px) 50vw, 33vw"
                                         className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"

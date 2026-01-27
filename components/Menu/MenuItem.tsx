@@ -22,7 +22,7 @@ export default function MenuItem({ item, onClick }: MenuItemProps) {
                 {imageUrl ? (
                     <Image
                         src={imageUrl}
-                        alt={title}
+                        alt={title || "Dish"}
                         fill
                         className="object-cover group-hover:scale-105 transition-transform duration-500"
                     />
