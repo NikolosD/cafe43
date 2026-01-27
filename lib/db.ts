@@ -83,6 +83,29 @@ export async function getPublicMenu(supabase: SupabaseClient, locale: string) {
     return menu;
 }
 
+export async function getSettings(supabase: SupabaseClient) {
+    const { data, error } = await supabase
+        .from('settings')
+        .select('*')
+        .single();
+
+    if (error && error.code !== 'PGRST116') { // PGRST116 is "no rows returned"
+        console.error('Error fetching settings:', error);
+    }
+    return data || null;
+}
+
+export async function adminUpdateSettings(supabase: SupabaseClient, settings: any) {
+    const { data, error } = await supabase
+        .from('settings')
+        .upsert(settings, { onConflict: 'id' })
+        .select()
+        .single();
+
+    if (error) throw error;
+    return data;
+}
+
 // --- ADMIN CATEGORIES ---
 
 export async function adminGetAllCategories(supabase: SupabaseClient) {

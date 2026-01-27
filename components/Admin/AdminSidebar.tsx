@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { LayoutDashboard, UtensilsCrossed, LogOut, Coffee, Menu } from 'lucide-react';
+import { LayoutDashboard, UtensilsCrossed, LogOut, Coffee, Menu, Settings, QrCode } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 
@@ -26,6 +26,8 @@ export default function AdminSidebar({ className }: AdminSidebarProps) {
     const navItems = [
         { href: '/admin/categories', label: 'Categories', icon: LayoutDashboard },
         { href: '/admin/items', label: 'Dishes', icon: UtensilsCrossed },
+        { href: '/admin/qr', label: 'QR Generator', icon: QrCode },
+        { href: '/admin/settings', label: 'Settings', icon: Settings },
     ];
 
     return (

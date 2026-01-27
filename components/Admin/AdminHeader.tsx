@@ -3,7 +3,7 @@
 import { Link, usePathname, useRouter } from '@/lib/navigation';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { LayoutDashboard, UtensilsCrossed, LogOut, Coffee, Menu, QrCode } from 'lucide-react';
+import { LayoutDashboard, UtensilsCrossed, LogOut, Coffee, Menu, QrCode, Settings } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import {
     Sheet,
@@ -36,6 +36,7 @@ export default function AdminHeader() {
         { href: '/admin/categories', label: t('categories'), icon: LayoutDashboard },
         { href: '/admin/items', label: t('items'), icon: UtensilsCrossed },
         { href: '/admin/qr', label: t('qr'), icon: QrCode },
+        { href: '/admin/settings', label: t('settings'), icon: Settings },
     ];
 
     return (
