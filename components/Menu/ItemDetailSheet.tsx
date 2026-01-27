@@ -10,6 +10,7 @@ import { Badge } from "lucide-react"; // Actually let's just use div for badges 
 import { X, Flame, Leaf, Sparkles, Scale } from "lucide-react";
 import { Item } from "@/lib/db";
 import { cn } from "@/lib/utils";
+import { useTranslations } from 'next-intl';
 
 interface ItemDetailSheetProps {
     item: Item | null;
@@ -18,6 +19,8 @@ interface ItemDetailSheetProps {
 }
 
 export default function ItemDetailSheet({ item, isOpen, onClose }: ItemDetailSheetProps) {
+    const t = useTranslations('Menu');
+    const ta = useTranslations('Admin');
     if (!item) return null;
 
     return (
@@ -25,7 +28,7 @@ export default function ItemDetailSheet({ item, isOpen, onClose }: ItemDetailShe
             {/* @ts-ignore */}
             <SheetContent
                 side="bottom"
-                className="h-[88dvh] sm:h-[85vh] p-0 overflow-hidden rounded-t-[32px] border-none bg-white focus-visible:ring-0"
+                className="h-[88dvh] sm:h-[85vh] sm:max-w-xl sm:left-1/2 sm:-translate-x-1/2 p-0 overflow-hidden rounded-t-[32px] border-none bg-white focus-visible:ring-0 shadow-2xl"
             >
                 {/* Drag Handle */}
                 <div className="absolute top-2 left-1/2 -translate-x-1/2 w-12 h-1.5 bg-zinc-200 rounded-full z-50" />
@@ -57,7 +60,7 @@ export default function ItemDetailSheet({ item, isOpen, onClose }: ItemDetailShe
                         <div className="absolute top-5 left-5 flex flex-wrap gap-2">
                             {item.is_new && (
                                 <div className="px-3 py-1 bg-yellow-400 text-black text-[10px] font-bold uppercase tracking-wider rounded-full flex items-center gap-1 shadow-lg">
-                                    <Sparkles className="w-3 h-3" /> New
+                                    <Sparkles className="w-3 h-3" /> {ta('new')}
                                 </div>
                             )}
                         </div>
@@ -95,7 +98,7 @@ export default function ItemDetailSheet({ item, isOpen, onClose }: ItemDetailShe
                         {/* Description */}
                         {item.description && (
                             <div className="space-y-3">
-                                <h3 className="text-sm font-bold uppercase tracking-widest text-zinc-400">Description</h3>
+                                <h3 className="text-sm font-bold uppercase tracking-widest text-zinc-400">{t('description')}</h3>
                                 <p className="text-zinc-600 leading-relaxed text-lg">
                                     {item.description}
                                 </p>
@@ -105,7 +108,7 @@ export default function ItemDetailSheet({ item, isOpen, onClose }: ItemDetailShe
                         {/* Status Badges */}
                         {!item.is_active && (
                             <div className="mt-8 p-4 bg-zinc-100 rounded-2xl text-center font-bold text-zinc-500 uppercase tracking-widest border-2 border-dashed border-zinc-200">
-                                Currently Sold Out
+                                {ta('sold_out')}
                             </div>
                         )}
                     </div>

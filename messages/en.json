@@ -2,7 +2,8 @@
     "Menu": {
         "title": "Menu",
         "search": "Search items...",
-        "empty": "No items found"
+        "empty": "No items found",
+        "description": "Description"
     },
     "Admin": {
         "categories": "Categories",
