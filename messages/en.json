@@ -78,6 +78,13 @@
         "actions": "Actions",
         "dish_title": "Title",
         "price": "Price",
-        "other_languages": "Other Languages"
+        "other_languages": "Other Languages",
+        "select_category_to_manage": "Select a category to manage items",
+        "select_category_hint": "Choose a specific category from the dropdown above to enable reordering and management.",
+        "select_category_placeholder": "Select category to manage...",
+        "view_all_categories": "View All Categories",
+        "reorder_disabled_all": "Manual reordering disabled in 'All Categories' view",
+        "reorder_disabled_sort": "Manual reordering disabled when sorting by columns",
+        "drag_to_reorder_within": "Drag dishes to reorder within {category}"
     }
 }

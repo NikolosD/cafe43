@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useLocale } from 'next-intl';
 import { createClient } from '@/lib/supabase/client';
 import { adminUpsertItem, adminDeleteItem } from '@/lib/db';
@@ -33,10 +33,27 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { Label } from '@/components/ui/label';
-import { Trash2, Pencil, Plus, Upload, X, Search, Filter, ArrowUpDown, Image as ImageIcon, Flame, Leaf, Sparkles, Scale } from 'lucide-react';
+import { Trash2, Pencil, Plus, Upload, X, Search, Filter, ArrowUpDown, Image as ImageIcon, Flame, Leaf, Sparkles, Scale, GripVertical } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
+import {
+    DndContext,
+    closestCenter,
+    KeyboardSensor,
+    PointerSensor,
+    useSensor,
+    useSensors,
+    DragEndEvent
+} from '@dnd-kit/core';
+import {
+    arrayMove,
+    SortableContext,
+    sortableKeyboardCoordinates,
+    verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
+import { SortableRow } from './SortableRow';
 
 interface ItemTableProps {
     initialItems: any[];
@@ -49,14 +66,26 @@ export default function ItemTable({ initialItems, categories }: ItemTableProps) 
     const supabase = createClient();
     const router = useRouter();
     const [items, setItems] = useState(initialItems);
+
+    useEffect(() => {
+        setItems(initialItems);
+    }, [initialItems]);
     const [isOpen, setIsOpen] = useState(false);
     const [loading, setLoading] = useState(false);
     const [uploading, setUploading] = useState(false);
 
+    const sensors = useSensors(
+        useSensor(PointerSensor),
+        useSensor(KeyboardSensor, {
+            coordinateGetter: sortableKeyboardCoordinates,
+        })
+    );
+
     // Filters
     const [searchQuery, setSearchQuery] = useState('');
-    const [categoryFilter, setCategoryFilter] = useState('all');
+    const [categoryFilter, setCategoryFilter] = useState('none');
     const [statusFilter, setStatusFilter] = useState('all');
+    const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' } | null>(null);
 
     // Form State
     const [currentId, setCurrentId] = useState<string | null>(null);
@@ -90,15 +119,82 @@ export default function ItemTable({ initialItems, categories }: ItemTableProps) 
         }
     };
 
-    const filteredItems = items.filter(item => {
-        const matchesSearch = item.item_translations.some((t: any) =>
-            t.title.toLowerCase().includes(searchQuery.toLowerCase())
-        );
-        const matchesCategory = categoryFilter === 'all' || item.category_id === categoryFilter;
-        const matchesStatus = statusFilter === 'all' || (statusFilter === 'active' ? item.is_active : !item.is_active);
+    const filteredItems = useMemo(() => {
+        if (categoryFilter === 'none') return [];
 
-        return matchesSearch && matchesCategory && matchesStatus;
-    }).sort((a, b) => a.sort - b.sort);
+        const filtered = items.filter(item => {
+            const matchesSearch = item.item_translations.some((t: any) =>
+                t.title.toLowerCase().includes(searchQuery.toLowerCase())
+            );
+            const matchesCategory = categoryFilter === 'all' || item.category_id === categoryFilter;
+            const matchesStatus = statusFilter === 'all' || (statusFilter === 'active' ? item.is_active : !item.is_active);
+
+            return matchesSearch && matchesCategory && matchesStatus;
+        });
+
+        if (sortConfig) {
+            return [...filtered].sort((a, b) => {
+                let vA, vB;
+                if (sortConfig.key === 'title') {
+                    vA = a.item_translations.find((t: any) => t.lang === locale)?.title || '';
+                    vB = b.item_translations.find((t: any) => t.lang === locale)?.title || '';
+                } else if (sortConfig.key === 'category') {
+                    const catA = a.categories?.category_translations?.find((t: any) => t.lang === locale)?.title || '';
+                    const catB = b.categories?.category_translations?.find((t: any) => t.lang === locale)?.title || '';
+                    vA = catA;
+                    vB = catB;
+                } else {
+                    vA = (a as any)[sortConfig.key];
+                    vB = (b as any)[sortConfig.key];
+                }
+
+                if (vA < vB) return sortConfig.direction === 'asc' ? -1 : 1;
+                if (vA > vB) return sortConfig.direction === 'asc' ? 1 : -1;
+                return 0;
+            });
+        }
+
+        return filtered.sort((a, b) => a.sort - b.sort);
+    }, [items, searchQuery, categoryFilter, statusFilter, sortConfig, locale]);
+
+    const isDndEnabled = categoryFilter !== 'all' && categoryFilter !== 'none' && !sortConfig;
+    const selectedCategoryName = categories.find(c => c.id === categoryFilter)?.category_translations.find((t: any) => t.lang === locale)?.title || '';
+
+    const handleDragEnd = async (event: DragEndEvent) => {
+        const { active, over } = event;
+
+        if (over && active.id !== over.id) {
+            setItems((prevItems) => {
+                const oldIndex = prevItems.findIndex((i) => i.id === active.id);
+                const newIndex = prevItems.findIndex((i) => i.id === over.id);
+                const updated = arrayMove(prevItems, oldIndex, newIndex);
+
+                // Persist to DB
+                const persistOrder = async () => {
+                    try {
+                        const updates = updated.map((item, index) => ({
+                            id: item.id,
+                            sort: (index + 1) * 10,
+                        }));
+
+                        const { error } = await supabase
+                            .from('items')
+                            .upsert(updates, { onConflict: 'id' });
+
+                        if (error) throw error;
+                        console.log('Order updated');
+                    } catch (err) {
+                        console.error('Failed to save order:', err);
+                        alert('Failed to save order. Rolling back...');
+                        setItems(prevItems); // Rollback
+                    }
+                };
+
+                persistOrder();
+                return updated.map((item, index) => ({ ...item, sort: (index + 1) * 10 }));
+            });
+        }
+    };
 
     const handleOpen = (item?: any) => {
         if (item) {
@@ -155,6 +251,11 @@ export default function ItemTable({ initialItems, categories }: ItemTableProps) 
             setDescriptions({ ru: '', en: '', ge: '' });
             setOriginalDescriptions({ ru: '', en: '', ge: '' });
             setDirtyFields(new Set());
+
+            // Pre-fill category if in category view
+            if (categoryFilter !== 'all' && categoryFilter !== 'none') {
+                setCategoryId(categoryFilter);
+            }
         }
         setIsOpen(true);
     };
@@ -294,7 +395,6 @@ export default function ItemTable({ initialItems, categories }: ItemTableProps) 
 
             setIsOpen(false);
             router.refresh();
-            window.location.reload();
         } catch (error) {
             console.error(error);
             alert('Error saving item');
@@ -315,7 +415,6 @@ export default function ItemTable({ initialItems, categories }: ItemTableProps) 
 
             setItems(items.filter(i => i.id !== item.id));
             router.refresh();
-            window.location.reload();
         } catch (e) {
             alert('Error deleting');
         }
@@ -328,125 +427,187 @@ export default function ItemTable({ initialItems, categories }: ItemTableProps) 
                     <h1 className="text-2xl font-bold tracking-tight text-zinc-900">{t('items_title')}</h1>
                     <p className="text-zinc-500 text-sm">{t('items_desc')}</p>
                 </div>
-                <Button onClick={() => handleOpen()} disabled={categories.length === 0} className="bg-zinc-900 hover:bg-zinc-800 shadow-sm shrink-0">
+                <Button
+                    onClick={() => handleOpen()}
+                    disabled={categories.length === 0 || categoryFilter === 'none'}
+                    className="bg-zinc-900 hover:bg-zinc-800 shadow-sm shrink-0"
+                    title={categoryFilter === 'none' ? t('select_category_to_manage') : ""}
+                >
                     <Plus className="mr-2 h-4 w-4" /> {t('add_dish')}
                 </Button>
             </div>
 
             {/* Controls Bar */}
-            <div className="flex flex-col sm:flex-row gap-4">
-                <div className="relative flex-1">
-                    <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-                        placeholder={t('search_dishes')}
-                        className="pl-9 bg-white"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                    />
+            <div className="flex flex-col gap-4">
+                <div className="flex flex-col sm:flex-row gap-4">
+                    <div className="w-full sm:w-[240px]">
+                        <Select value={categoryFilter} onValueChange={(v) => {
+                            setCategoryFilter(v);
+                            setSortConfig(null); // Reset manual sort on category change to enable D&D
+                        }}>
+                            <SelectTrigger className="w-full bg-white border-zinc-200 font-medium">
+                                <Filter className="w-4 h-4 mr-2 text-zinc-400" />
+                                <SelectValue placeholder={t('select_category_placeholder')} />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="none" className="text-zinc-400">{t('select_category_placeholder')}</SelectItem>
+                                <SelectItem value="all">{t('view_all_categories')}</SelectItem>
+                                {categories.map(c => {
+                                    const title = c.category_translations.find((t: any) => t.lang === locale)?.title ||
+                                        c.category_translations.find((t: any) => t.lang === 'ge')?.title ||
+                                        c.category_translations[0]?.title;
+                                    return <SelectItem key={c.id} value={c.id}>{title}</SelectItem>
+                                })}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div className="relative flex-1">
+                        <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                        <Input
+                            placeholder={t('search_dishes')}
+                            className="pl-9 bg-white"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                    </div>
+                    <div className="flex gap-2">
+                        <Select value={statusFilter} onValueChange={setStatusFilter}>
+                            <SelectTrigger className="w-[130px] bg-white">
+                                <SelectValue placeholder={t('status')} />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">{t('all_status')}</SelectItem>
+                                <SelectItem value="active">{t('active')}</SelectItem>
+                                <SelectItem value="inactive">{t('sold_out')}</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
                 </div>
-                <div className="flex gap-2 flex-wrap">
-                    <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                        <SelectTrigger className="w-[160px] bg-white">
-                            <Filter className="w-4 h-4 mr-2 text-muted-foreground" />
-                            <SelectValue placeholder={t('category')} />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">{t('all_categories')}</SelectItem>
-                            {categories.map(c => {
-                                const title = c.category_translations.find((t: any) => t.lang === locale)?.title ||
-                                    c.category_translations.find((t: any) => t.lang === 'ge')?.title ||
-                                    c.category_translations[0]?.title;
-                                return <SelectItem key={c.id} value={c.id}>{title}</SelectItem>
-                            })}
-                        </SelectContent>
-                    </Select>
-                    <Select value={statusFilter} onValueChange={setStatusFilter}>
-                        <SelectTrigger className="w-[130px] bg-white">
-                            <SelectValue placeholder={t('status')} />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">{t('all_status')}</SelectItem>
-                            <SelectItem value="active">{t('active')}</SelectItem>
-                            <SelectItem value="inactive">{t('sold_out')}</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
+
+                {categoryFilter !== 'none' && (
+                    <div className="flex items-center gap-2 px-1 text-xs text-zinc-500 italic">
+                        {isDndEnabled ? (
+                            <>
+                                <GripVertical className="w-3 h-3" />
+                                <span>{t('drag_to_reorder_within', { category: selectedCategoryName })}</span>
+                            </>
+                        ) : (
+                            <span>{categoryFilter === 'all' ? t('reorder_disabled_all') : t('reorder_disabled_sort')}</span>
+                        )}
+                    </div>
+                )}
             </div>
 
             <Card className="rounded-xl shadow-sm border-zinc-200 overflow-hidden bg-white">
                 {filteredItems.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-16 text-center">
+                    <div className="flex flex-col items-center justify-center py-24 text-center">
                         <div className="bg-zinc-50 p-4 rounded-full mb-4">
-                            <UtensilsCrossed className="w-8 h-8 text-zinc-300" />
+                            {categoryFilter === 'none' ? (
+                                <Filter className="w-8 h-8 text-zinc-300" />
+                            ) : (
+                                <UtensilsCrossed className="w-8 h-8 text-zinc-300" />
+                            )}
                         </div>
-                        <h3 className="font-medium text-zinc-900">{t('no_dishes')}</h3>
-                        <p className="text-zinc-500 text-sm mt-1">{t('no_dishes_desc')}</p>
+                        <h3 className="font-medium text-zinc-900">
+                            {categoryFilter === 'none' ? t('select_category_to_manage') : t('no_dishes')}
+                        </h3>
+                        <p className="text-zinc-500 text-sm mt-2 max-w-[280px] mx-auto">
+                            {categoryFilter === 'none'
+                                ? t('select_category_hint')
+                                : t('no_dishes_desc')}
+                        </p>
                     </div>
                 ) : (
                     <div className="overflow-x-auto">
                         <Table>
                             <TableHeader className="bg-zinc-50/50">
                                 <TableRow>
+                                    <TableHead className="w-[40px] px-2"></TableHead>
                                     <TableHead className="w-[80px]">{t('dish_image')}</TableHead>
-                                    <TableHead className="w-[80px] text-zinc-600">{t('sort')}</TableHead>
-                                    <TableHead className="text-zinc-900 font-semibold">{t('dish_title')}</TableHead>
-                                    <TableHead className="text-zinc-600">{t('category')}</TableHead>
-                                    <TableHead className="text-zinc-900 font-medium">{t('price')}</TableHead>
+                                    <TableHead
+                                        className="text-zinc-900 font-semibold cursor-pointer hover:text-zinc-900 transition-colors"
+                                        onClick={() => setSortConfig(prev => ({ key: 'title', direction: prev?.key === 'title' && prev.direction === 'asc' ? 'desc' : 'asc' }))}
+                                    >
+                                        <div className="flex items-center gap-1">{t('dish_title')} <ArrowUpDown className="w-3 h-3" /></div>
+                                    </TableHead>
+                                    <TableHead
+                                        className="text-zinc-600 cursor-pointer hover:text-zinc-900 transition-colors"
+                                        onClick={() => setSortConfig(prev => ({ key: 'category', direction: prev?.key === 'category' && prev.direction === 'asc' ? 'desc' : 'asc' }))}
+                                    >
+                                        <div className="flex items-center gap-1">{t('category')} <ArrowUpDown className="w-3 h-3" /></div>
+                                    </TableHead>
+                                    <TableHead
+                                        className="text-zinc-900 font-medium cursor-pointer hover:text-zinc-900 transition-colors"
+                                        onClick={() => setSortConfig(prev => ({ key: 'price', direction: prev?.key === 'price' && prev.direction === 'asc' ? 'desc' : 'asc' }))}
+                                    >
+                                        <div className="flex items-center gap-1">{t('price')} <ArrowUpDown className="w-3 h-3" /></div>
+                                    </TableHead>
                                     <TableHead className="w-[100px] text-zinc-600">{t('status')}</TableHead>
                                     <TableHead className="text-right w-[100px]">{t('actions')}</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {filteredItems.map((item) => {
-                                    const itemTitle = item.item_translations.find((t: any) => t.lang === locale)?.title ||
-                                        item.item_translations.find((t: any) => t.lang === 'ge')?.title ||
-                                        item.item_translations[0]?.title;
-                                    const catTranslations = item.categories?.category_translations || [];
-                                    const catTitle = catTranslations.find((t: any) => t.lang === locale)?.title ||
-                                        catTranslations.find((t: any) => t.lang === 'ge')?.title ||
-                                        catTranslations[0]?.title || 'Unknown';
+                                <DndContext
+                                    sensors={sensors}
+                                    collisionDetection={closestCenter}
+                                    onDragEnd={handleDragEnd}
+                                    modifiers={[restrictToVerticalAxis]}
+                                >
+                                    <SortableContext
+                                        items={filteredItems.map(i => i.id)}
+                                        strategy={verticalListSortingStrategy}
+                                    >
+                                        {filteredItems.map((item) => {
+                                            const itemTitle = item.item_translations.find((t: any) => t.lang === locale)?.title ||
+                                                item.item_translations.find((t: any) => t.lang === 'ge')?.title ||
+                                                item.item_translations[0]?.title;
+                                            const catTranslations = item.categories?.category_translations || [];
+                                            const catTitle = catTranslations.find((t: any) => t.lang === locale)?.title ||
+                                                catTranslations.find((t: any) => t.lang === 'ge')?.title ||
+                                                catTranslations[0]?.title || 'Unknown';
 
-                                    return (
-                                        <TableRow key={item.id} className="hover:bg-zinc-50/60 transition-colors group">
-                                            <TableCell>
-                                                {item.image_url ? (
-                                                    <div className="relative h-10 w-10 overflow-hidden rounded-lg border border-zinc-100">
-                                                        <img src={item.image_url} alt="Item" className="w-full h-full object-cover" />
-                                                    </div>
-                                                ) : (
-                                                    <div className="h-10 w-10 bg-zinc-100 rounded-lg flex items-center justify-center">
-                                                        <ImageIcon className="w-4 h-4 text-zinc-300" />
-                                                    </div>
-                                                )}
-                                            </TableCell>
-                                            <TableCell className="text-zinc-500">{item.sort}</TableCell>
-                                            <TableCell className="font-medium text-zinc-900">{itemTitle || <span className="text-red-400 font-normal text-xs">No translation</span>}</TableCell>
-                                            <TableCell className="text-zinc-600 text-sm">{catTitle}</TableCell>
-                                            <TableCell className="font-semibold text-zinc-900">{item.price} ₾</TableCell>
-                                            <TableCell>
-                                                {item.is_active ? (
-                                                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700">
-                                                        {t('active')}
-                                                    </span>
-                                                ) : (
-                                                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-zinc-100 text-zinc-500">
-                                                        {t('sold_out')}
-                                                    </span>
-                                                )}
-                                            </TableCell>
-                                            <TableCell className="text-right">
-                                                <div className="flex justify-end gap-1 opacity-60 group-hover:opacity-100 transition-opacity">
-                                                    <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-zinc-100 hover:text-blue-600" onClick={() => handleOpen(item)}>
-                                                        <Pencil className="h-4 w-4" />
-                                                    </Button>
-                                                    <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-red-50 hover:text-red-600" onClick={() => handleDelete(item)}>
-                                                        <Trash2 className="h-4 w-4" />
-                                                    </Button>
-                                                </div>
-                                            </TableCell>
-                                        </TableRow>
-                                    );
-                                })}
+                                            return (
+                                                <SortableRow key={item.id} id={item.id} disabled={!isDndEnabled}>
+                                                    <TableCell>
+                                                        {item.image_url ? (
+                                                            <div className="relative h-10 w-10 overflow-hidden rounded-lg border border-zinc-100">
+                                                                <img src={item.image_url} alt="Item" className="w-full h-full object-cover" />
+                                                            </div>
+                                                        ) : (
+                                                            <div className="h-10 w-10 bg-zinc-100 rounded-lg flex items-center justify-center">
+                                                                <ImageIcon className="w-4 h-4 text-zinc-300" />
+                                                            </div>
+                                                        )}
+                                                    </TableCell>
+                                                    <TableCell className="font-medium text-zinc-900">{itemTitle || <span className="text-red-400 font-normal text-xs">No translation</span>}</TableCell>
+                                                    <TableCell className="text-zinc-600 text-sm">{catTitle}</TableCell>
+                                                    <TableCell className="font-semibold text-zinc-900">{item.price} ₾</TableCell>
+                                                    <TableCell>
+                                                        {item.is_active ? (
+                                                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700">
+                                                                {t('active')}
+                                                            </span>
+                                                        ) : (
+                                                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-zinc-100 text-zinc-500">
+                                                                {t('sold_out')}
+                                                            </span>
+                                                        )}
+                                                    </TableCell>
+                                                    <TableCell className="text-right">
+                                                        <div className="flex justify-end gap-1 opacity-60 group-hover:opacity-100 transition-opacity">
+                                                            <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-zinc-100 hover:text-blue-600" onClick={() => handleOpen(item)}>
+                                                                <Pencil className="h-4 w-4" />
+                                                            </Button>
+                                                            <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-red-50 hover:text-red-600" onClick={() => handleDelete(item)}>
+                                                                <Trash2 className="h-4 w-4" />
+                                                            </Button>
+                                                        </div>
+                                                    </TableCell>
+                                                </SortableRow>
+                                            );
+                                        })}
+                                    </SortableContext>
+                                </DndContext>
                             </TableBody>
                         </Table>
                     </div>

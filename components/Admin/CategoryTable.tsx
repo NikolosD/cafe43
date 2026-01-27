@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useLocale } from 'next-intl';
 import { createClient } from '@/lib/supabase/client';
 import { adminUpsertCategory, adminDeleteCategory } from '@/lib/db';
@@ -37,6 +37,24 @@ import { Trash2, Pencil, Plus, Layers, Search, Filter, ArrowUpDown, Upload, Imag
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
+import {
+    DndContext,
+    closestCenter,
+    KeyboardSensor,
+    PointerSensor,
+    useSensor,
+    useSensors,
+    DragEndEvent
+} from '@dnd-kit/core';
+import {
+    arrayMove,
+    SortableContext,
+    sortableKeyboardCoordinates,
+    verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
+import { SortableRow } from './SortableRow';
+import { GripVertical } from 'lucide-react';
 
 interface CategoryTableProps {
     initialCategories: any[];
@@ -48,9 +66,56 @@ export default function CategoryTable({ initialCategories }: CategoryTableProps)
     const supabase = createClient();
     const router = useRouter();
     const [categories, setCategories] = useState(initialCategories);
+
+    useEffect(() => {
+        setCategories(initialCategories);
+    }, [initialCategories]);
     const [isOpen, setIsOpen] = useState(false);
     const [loading, setLoading] = useState(false);
     const [uploading, setUploading] = useState(false);
+
+    const sensors = useSensors(
+        useSensor(PointerSensor),
+        useSensor(KeyboardSensor, {
+            coordinateGetter: sortableKeyboardCoordinates,
+        })
+    );
+
+    const handleDragEnd = async (event: DragEndEvent) => {
+        const { active, over } = event;
+
+        if (over && active.id !== over.id) {
+            setCategories((items) => {
+                const oldIndex = items.findIndex((i) => i.id === active.id);
+                const newIndex = items.findIndex((i) => i.id === over.id);
+                const updated = arrayMove(items, oldIndex, newIndex);
+
+                // Persist to DB
+                const persistOrder = async () => {
+                    try {
+                        const updates = updated.map((cat, index) => ({
+                            id: cat.id,
+                            sort: (index + 1) * 10,
+                        }));
+
+                        const { error } = await supabase
+                            .from('categories')
+                            .upsert(updates, { onConflict: 'id' });
+
+                        if (error) throw error;
+                        console.log('Order updated');
+                    } catch (err) {
+                        console.error('Failed to save order:', err);
+                        alert('Failed to save order. Rolling back...');
+                        setCategories(items); // Rollback
+                    }
+                };
+
+                persistOrder();
+                return updated.map((cat, index) => ({ ...cat, sort: (index + 1) * 10 }));
+            });
+        }
+    };
 
     // Filter & Search State
     const [searchQuery, setSearchQuery] = useState('');
@@ -255,7 +320,6 @@ export default function CategoryTable({ initialCategories }: CategoryTableProps)
 
             setIsOpen(false);
             router.refresh();
-            window.location.reload();
         } catch (error) {
             console.error(error);
             alert('Error saving category');
@@ -276,7 +340,6 @@ export default function CategoryTable({ initialCategories }: CategoryTableProps)
 
             setCategories(categories.filter(c => c.id !== category.id));
             router.refresh();
-            window.location.reload();
         } catch (e) {
             alert('Error deleting');
         }
@@ -344,7 +407,7 @@ export default function CategoryTable({ initialCategories }: CategoryTableProps)
                         <Table>
                             <TableHeader className="bg-zinc-50/50">
                                 <TableRow>
-                                    <TableHead className="w-[80px] font-semibold text-zinc-600">{t('sort')}</TableHead>
+                                    <TableHead className="w-[40px] px-2"></TableHead>
                                     <TableHead className="w-[100px] font-semibold text-zinc-900">{t('dish_image')}</TableHead>
                                     <TableHead className="font-semibold text-zinc-900">{t('dish_title')}</TableHead>
                                     <TableHead className="font-semibold text-zinc-600">{t('other_languages')}</TableHead>
@@ -353,58 +416,69 @@ export default function CategoryTable({ initialCategories }: CategoryTableProps)
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {filteredCategories.map((category) => {
-                                    const ru = category.category_translations.find((t: any) => t.lang === 'ru')?.title;
-                                    const en = category.category_translations.find((t: any) => t.lang === 'en')?.title;
-                                    const ge = category.category_translations.find((t: any) => t.lang === 'ge')?.title;
-                                    const title = category.category_translations.find((t: any) => t.lang === locale)?.title ||
-                                        ge ||
-                                        category.category_translations[0]?.title;
+                                <DndContext
+                                    sensors={sensors}
+                                    collisionDetection={closestCenter}
+                                    onDragEnd={handleDragEnd}
+                                    modifiers={[restrictToVerticalAxis]}
+                                >
+                                    <SortableContext
+                                        items={filteredCategories.map(c => c.id)}
+                                        strategy={verticalListSortingStrategy}
+                                    >
+                                        {filteredCategories.map((category) => {
+                                            const ru = category.category_translations.find((t: any) => t.lang === 'ru')?.title;
+                                            const en = category.category_translations.find((t: any) => t.lang === 'en')?.title;
+                                            const ge = category.category_translations.find((t: any) => t.lang === 'ge')?.title;
+                                            const title = category.category_translations.find((t: any) => t.lang === locale)?.title ||
+                                                ge ||
+                                                category.category_translations[0]?.title;
 
-                                    return (
-                                        <TableRow key={category.id} className="hover:bg-zinc-50/60 transition-colors group">
-                                            <TableCell className="font-medium text-zinc-500">{category.sort}</TableCell>
-                                            <TableCell>
-                                                <div className="w-12 h-12 rounded-lg bg-zinc-100 overflow-hidden border border-zinc-200">
-                                                    {category.image_url ? (
-                                                        <img src={category.image_url} alt="" className="w-full h-full object-cover" />
-                                                    ) : (
-                                                        <div className="w-full h-full flex items-center justify-center text-[8px] text-zinc-400">NO IMG</div>
-                                                    )}
-                                                </div>
-                                            </TableCell>
-                                            <TableCell className="font-bold text-zinc-900 text-base">{title || <span className="text-red-400 text-sm font-normal">No translation</span>}</TableCell>
-                                            <TableCell>
-                                                <div className="flex flex-col gap-1 text-sm">
-                                                    {ru && <span className="inline-flex items-center text-zinc-600"><span className="w-5 text-[10px] font-bold text-zinc-400 uppercase mr-1">RU</span> {ru}</span>}
-                                                    {en && <span className="inline-flex items-center text-zinc-600"><span className="w-5 text-[10px] font-bold text-zinc-400 uppercase mr-1">EN</span> {en}</span>}
-                                                    {!ru && !en && <span className="text-zinc-300 italic">No translations</span>}
-                                                </div>
-                                            </TableCell>
-                                            <TableCell>
-                                                {category.is_active ? (
-                                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-100">
-                                                        {t('active')}
-                                                    </span>
-                                                ) : (
-                                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-zinc-100 text-zinc-500 border border-zinc-200">
-                                                        {t('inactive')}
-                                                    </span>
-                                                )}
-                                            </TableCell>
-                                            <TableCell className="text-right">
-                                                <div className="flex justify-end gap-1 opacity-60 group-hover:opacity-100 transition-opacity">
-                                                    <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-zinc-100 hover:text-blue-600" onClick={() => handleOpen(category)}>
-                                                        <Pencil className="h-4 w-4" />
-                                                    </Button>
-                                                    <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-red-50 hover:text-red-600" onClick={() => handleDelete(category)}>
-                                                        <Trash2 className="h-4 w-4" />
-                                                    </Button>
-                                                </div>
-                                            </TableCell>
-                                        </TableRow>
-                                    );
-                                })}
+                                            return (
+                                                <SortableRow key={category.id} id={category.id}>
+                                                    <TableCell>
+                                                        <div className="w-12 h-12 rounded-lg bg-zinc-100 overflow-hidden border border-zinc-200">
+                                                            {category.image_url ? (
+                                                                <img src={category.image_url} alt="" className="w-full h-full object-cover" />
+                                                            ) : (
+                                                                <div className="w-full h-full flex items-center justify-center text-[8px] text-zinc-400">NO IMG</div>
+                                                            )}
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell className="font-bold text-zinc-900 text-base">{title || <span className="text-red-400 text-sm font-normal">No translation</span>}</TableCell>
+                                                    <TableCell>
+                                                        <div className="flex flex-col gap-1 text-sm">
+                                                            {ru && <span className="inline-flex items-center text-zinc-600"><span className="w-5 text-[10px] font-bold text-zinc-400 uppercase mr-1">RU</span> {ru}</span>}
+                                                            {en && <span className="inline-flex items-center text-zinc-600"><span className="w-5 text-[10px] font-bold text-zinc-400 uppercase mr-1">EN</span> {en}</span>}
+                                                            {!ru && !en && <span className="text-zinc-300 italic">No translations</span>}
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        {category.is_active ? (
+                                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-100">
+                                                                {t('active')}
+                                                            </span>
+                                                        ) : (
+                                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-zinc-100 text-zinc-500 border border-zinc-200">
+                                                                {t('inactive')}
+                                                            </span>
+                                                        )}
+                                                    </TableCell>
+                                                    <TableCell className="text-right">
+                                                        <div className="flex justify-end gap-1 opacity-60 group-hover:opacity-100 transition-opacity">
+                                                            <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-zinc-100 hover:text-blue-600" onClick={() => handleOpen(category)}>
+                                                                <Pencil className="h-4 w-4" />
+                                                            </Button>
+                                                            <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-red-50 hover:text-red-600" onClick={() => handleDelete(category)}>
+                                                                <Trash2 className="h-4 w-4" />
+                                                            </Button>
+                                                        </div>
+                                                    </TableCell>
+                                                </SortableRow>
+                                            );
+                                        })}
+                                    </SortableContext>
+                                </DndContext>
                             </TableBody>
                         </Table>
                     </div>
