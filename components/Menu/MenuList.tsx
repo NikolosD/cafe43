@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { Search, ChevronLeft } from 'lucide-react';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import CategorySection from './CategorySection';
 import EmptyState from './EmptyState';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -14,7 +15,10 @@ import { Item } from '@/lib/db';
 export default function MenuList({ menu }: { menu: any[] }) {
     const t = useTranslations('Menu');
     const [mounted, setMounted] = useState(false);
-    const [activeCategoryId, setActiveCategoryId] = useState<string | null>(null);
+    const searchParams = useSearchParams();
+    const router = useRouter();
+    const pathname = usePathname();
+    const activeCategoryId = searchParams.get('category');
     const [selectedItem, setSelectedItem] = useState<Item | null>(null);
 
     useEffect(() => {
@@ -41,7 +45,11 @@ export default function MenuList({ menu }: { menu: any[] }) {
             {activeCategoryId && (
                 <div className="flex items-center gap-2 sticky top-16 z-40 py-2 bg-background/80 backdrop-blur-md -mx-4 px-4 border-b border-black/5 mb-4">
                     <button
-                        onClick={() => setActiveCategoryId(null)}
+                        onClick={() => {
+                            const params = new URLSearchParams(searchParams.toString());
+                            params.delete('category');
+                            router.push(`${pathname}?${params.toString()}`);
+                        }}
                         className="p-2 hover:bg-black/5 rounded-full transition-colors"
                     >
                         <ChevronLeft className="w-6 h-6" />
@@ -68,7 +76,9 @@ export default function MenuList({ menu }: { menu: any[] }) {
                             <button
                                 key={category.id}
                                 onClick={() => {
-                                    setActiveCategoryId(category.id);
+                                    const params = new URLSearchParams(searchParams.toString());
+                                    params.set('category', category.id);
+                                    router.push(`${pathname}?${params.toString()}`);
                                     window.scrollTo({ top: 0, behavior: 'instant' });
                                 }}
                                 className="group relative aspect-[4/5] rounded-3xl overflow-hidden bg-zinc-100 shadow-sm transition-all hover:shadow-md hover:-translate-y-1"

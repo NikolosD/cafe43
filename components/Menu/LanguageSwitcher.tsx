@@ -2,6 +2,7 @@
 
 import { useLocale } from 'next-intl';
 import { usePathname, useRouter } from '@/lib/navigation';
+import { useSearchParams } from 'next/navigation';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Globe } from 'lucide-react';
 
@@ -9,10 +10,13 @@ export default function LanguageSwitcher() {
     const locale = useLocale();
     const router = useRouter();
     const pathname = usePathname();
+    const searchParams = useSearchParams();
 
     const handleChange = (newLocale: string) => {
         localStorage.setItem('NEXT_LOCALE', newLocale);
-        router.replace(pathname, { locale: newLocale as "ru" | "en" | "ge" });
+        const params = searchParams.toString();
+        const targetPath = params ? `${pathname}?${params}` : pathname;
+        router.replace(targetPath, { locale: newLocale as "ru" | "en" | "ge" });
     };
 
     return (
