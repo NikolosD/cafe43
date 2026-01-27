@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { LayoutDashboard, UtensilsCrossed, LogOut, Coffee, Menu, Settings, QrCode } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 
 interface AdminSidebarProps {
     className?: string;
@@ -15,6 +16,7 @@ interface AdminSidebarProps {
 export default function AdminSidebar({ className }: AdminSidebarProps) {
     const pathname = usePathname();
     const router = useRouter();
+    const t = useTranslations('Admin');
     const supabase = createClient();
 
     const handleLogout = async () => {
@@ -24,10 +26,10 @@ export default function AdminSidebar({ className }: AdminSidebarProps) {
     };
 
     const navItems = [
-        { href: '/admin/categories', label: 'Categories', icon: LayoutDashboard },
-        { href: '/admin/items', label: 'Dishes', icon: UtensilsCrossed },
-        { href: '/admin/qr', label: 'QR Generator', icon: QrCode },
-        { href: '/admin/settings', label: 'Settings', icon: Settings },
+        { href: '/admin/categories', label: t('categories'), icon: LayoutDashboard },
+        { href: '/admin/items', label: t('items'), icon: UtensilsCrossed },
+        { href: '/admin/qr', label: t('qr'), icon: QrCode },
+        { href: '/admin/settings', label: t('settings'), icon: Settings },
     ];
 
     return (
@@ -66,7 +68,7 @@ export default function AdminSidebar({ className }: AdminSidebarProps) {
                     onClick={handleLogout}
                 >
                     <LogOut className="w-5 h-5 mr-3" />
-                    Logout
+                    {t('logout')}
                 </Button>
             </div>
         </aside>
