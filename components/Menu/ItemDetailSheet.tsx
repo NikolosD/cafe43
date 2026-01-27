@@ -36,7 +36,7 @@ export default function ItemDetailSheet({ item, isOpen, onClose }: ItemDetailShe
 
                 <div className="h-full flex flex-col overflow-y-auto pb-10">
                     {/* Hero Image */}
-                    <div className="relative aspect-square sm:aspect-video w-full bg-[#f9f9f9] shrink-0 overflow-hidden">
+                    <div className="relative aspect-square sm:aspect-video w-full bg-zinc-100 shrink-0">
                         {item.image_url ? (
                             <Image
                                 src={item.image_url!}
@@ -44,7 +44,7 @@ export default function ItemDetailSheet({ item, isOpen, onClose }: ItemDetailShe
                                 fill
                                 priority
                                 sizes="(max-width: 640px) 100vw, 640px"
-                                className="w-full h-full object-contain p-4 sm:p-6"
+                                className="w-full h-full object-cover"
                             />
                         ) : (
                             <div className="w-full h-full flex items-center justify-center text-zinc-300">
