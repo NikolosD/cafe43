@@ -25,8 +25,11 @@ export default function ItemDetailSheet({ item, isOpen, onClose }: ItemDetailShe
             {/* @ts-ignore */}
             <SheetContent
                 side="bottom"
-                className="h-[92vh] sm:h-[85vh] p-0 overflow-hidden rounded-t-[32px] border-none bg-white focus-visible:ring-0"
+                className="h-[88dvh] sm:h-[85vh] p-0 overflow-hidden rounded-t-[32px] border-none bg-white focus-visible:ring-0"
             >
+                {/* Drag Handle */}
+                <div className="absolute top-2 left-1/2 -translate-x-1/2 w-12 h-1.5 bg-zinc-200 rounded-full z-50" />
+
                 <div className="h-full flex flex-col overflow-y-auto pb-10">
                     {/* Hero Image */}
                     <div className="relative aspect-square sm:aspect-video w-full bg-zinc-100 shrink-0">
@@ -42,16 +45,16 @@ export default function ItemDetailSheet({ item, isOpen, onClose }: ItemDetailShe
                             </div>
                         )}
 
-                        {/* Custom Close Button for mobile feel */}
+                        {/* Custom Close Button for mobile feel - moved slightly down and left from the corner */}
                         <button
                             onClick={onClose}
-                            className="absolute top-4 right-4 p-2 bg-black/50 backdrop-blur-md text-white rounded-full hover:bg-black/70 transition-colors z-50"
+                            className="absolute top-5 right-5 p-2 bg-black/50 backdrop-blur-md text-white rounded-full hover:bg-black/70 transition-colors z-50 shadow-lg"
                         >
                             <X className="w-5 h-5" />
                         </button>
 
                         {/* Top Badges */}
-                        <div className="absolute top-4 left-4 flex flex-wrap gap-2">
+                        <div className="absolute top-5 left-5 flex flex-wrap gap-2">
                             {item.is_new && (
                                 <div className="px-3 py-1 bg-yellow-400 text-black text-[10px] font-bold uppercase tracking-wider rounded-full flex items-center gap-1 shadow-lg">
                                     <Sparkles className="w-3 h-3" /> New
