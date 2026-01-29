@@ -87,8 +87,8 @@ export default function ImageCropper({ image, aspect = 16 / 9, onCropComplete, o
     if (!image) return null;
 
     return (
-        <Dialog open={isOpen} onOpenChange={(open) => !open && onCancel()}>
-            <DialogContent className="sm:max-w-[600px] h-[80vh] flex flex-col p-0 overflow-hidden">
+        <Dialog open={isOpen} onOpenChange={(open) => !open && onCancel()} modal={true}>
+            <DialogContent className="sm:max-w-[600px] h-[80vh] flex flex-col p-0 overflow-hidden" onPointerDownOutside={(e) => e.preventDefault()}>
                 <DialogHeader className="p-6 pb-0">
                     <DialogTitle>Crop Image</DialogTitle>
                 </DialogHeader>
