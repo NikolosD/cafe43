@@ -97,6 +97,25 @@
         "view_all_categories": "View All Categories",
         "reorder_disabled_all": "Manual reordering disabled in 'All Categories' view",
         "reorder_disabled_sort": "Manual reordering disabled when sorting by columns",
-        "drag_to_reorder_within": "Drag dishes to reorder within {category}"
+        "drag_to_reorder_within": "Drag dishes to reorder within {category}",
+        "qr_destination": "QR Destination",
+        "specific_menu": "Specific Table/Lang",
+        "main_menu_simple": "Main Menu (Root)",
+        "customization": "Customization",
+        "qr_color": "QR Color",
+        "bg_color": "Background",
+        "dots_style": "Dots Style",
+        "corners_style": "Corners Square",
+        "corner_dots_style": "Corners Dot Style",
+        "content": "Content",
+        "styling": "Styling",
+        "logo": "Logo",
+        "remove": "Remove",
+        "logo_size": "Logo Size",
+        "logo_margin": "Logo Margin",
+        "colors": "Colors",
+        "gradient": "Gradient",
+        "shapes": "Shapes",
+        "error_level": "Precision"
     }
 }

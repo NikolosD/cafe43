@@ -33,8 +33,9 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { Label } from '@/components/ui/label';
-import { Trash2, Pencil, Plus, Upload, X, Search, Filter, ArrowUpDown, Image as ImageIcon, Flame, Leaf, Sparkles, Scale, GripVertical } from 'lucide-react';
+import { Trash2, Pencil, Plus, Upload, X, Search, Filter, ArrowUpDown, Image as ImageIcon, Flame, Leaf, Sparkles, Scale, GripVertical, UtensilsCrossed } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import ImageCropper from './ImageCropper';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import {
@@ -105,6 +106,10 @@ export default function ItemTable({ initialItems, categories }: ItemTableProps) 
     const [descriptions, setDescriptions] = useState({ ru: '', en: '', ge: '' });
     const [originalDescriptions, setOriginalDescriptions] = useState({ ru: '', en: '', ge: '' });
     const [dirtyFields, setDirtyFields] = useState<Set<string>>(new Set());
+
+    // Cropper state
+    const [isCropperOpen, setIsCropperOpen] = useState(false);
+    const [pendingImage, setPendingImage] = useState<string | null>(null);
 
     // Helper to get filename from URL
     const getStoragePath = (url: string | null) => {
@@ -263,16 +268,30 @@ export default function ItemTable({ initialItems, categories }: ItemTableProps) 
 
     const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
         try {
-            setUploading(true);
-            if (!event.target.files || event.target.files.length === 0) {
-                throw new Error('You must select an image to upload.');
-            }
+            const file = event.target.files?.[0];
+            if (!file) return;
 
-            let file = event.target.files[0];
+            const reader = new FileReader();
+            reader.onload = () => {
+                setPendingImage(reader.result as string);
+                setIsCropperOpen(true);
+            };
+            reader.readAsDataURL(file);
+        } catch (error) {
+            console.error("Error reading file:", error);
+        }
+    };
+
+    const handleCropComplete = async (croppedBlob: Blob) => {
+        setIsCropperOpen(false);
+        setUploading(true);
+
+        try {
+            let file = new File([croppedBlob], 'item.jpg', { type: 'image/jpeg' });
 
             // Image compression options
             const options = {
-                maxSizeMB: 0.8, // Target size under 1MB
+                maxSizeMB: 0.8,
                 maxWidthOrHeight: 1200,
                 useWebWorker: true
             };
@@ -280,13 +299,12 @@ export default function ItemTable({ initialItems, categories }: ItemTableProps) 
             try {
                 const compressedFile = await imageCompression(file, options);
                 file = compressedFile;
-                console.log(`Original size: ${event.target.files[0].size / 1024 / 1024}MB, Compressed size: ${file.size / 1024 / 1024}MB`);
+                console.log(`Compressed size: ${file.size / 1024 / 1024}MB`);
             } catch (error) {
                 console.error("Compression error:", error);
-                // Continue with original file if compression fails
             }
 
-            const fileExt = file.name.split('.').pop();
+            const fileExt = 'jpg';
             const fileName = `${Math.random()}.${fileExt}`;
             const filePath = `${fileName}`;
 
@@ -310,11 +328,15 @@ export default function ItemTable({ initialItems, categories }: ItemTableProps) 
             setImageUrl(publicUrl);
         } catch (error) {
             alert('Error uploading image!');
-            console.log(error);
+            console.error(error);
         } finally {
             setUploading(false);
+            setPendingImage(null);
         }
     };
+
+
+
 
     const handleSave = async () => {
         if (!titles.ge.trim()) {
@@ -800,29 +822,21 @@ export default function ItemTable({ initialItems, categories }: ItemTableProps) 
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+
+            <ImageCropper
+                image={pendingImage}
+                isOpen={isCropperOpen}
+                onCropComplete={handleCropComplete}
+                onCancel={() => {
+                    setIsCropperOpen(false);
+                    setPendingImage(null);
+                }}
+                aspect={1}
+            />
         </div>
     );
 }
 
-// Helper icon
-function UtensilsCrossed(props: any) {
-    return (
-        <svg
-            {...props}
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-        >
-            <path d="m2.37 6.38 10 10" />
-            <path d="m11.13 6.38-6 6" />
-            <path d="M19 8a3 3 0 1 0-6 0v6a3 3 0 1 0 6 0Z" />
-            <path d="m16 9 3 3" />
-        </svg>
-    )
-}
+
+
+

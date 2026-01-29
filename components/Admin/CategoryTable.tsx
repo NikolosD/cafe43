@@ -56,6 +56,7 @@ import {
 import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
 import { SortableRow } from './SortableRow';
 import { GripVertical } from 'lucide-react';
+import ImageCropper from './ImageCropper';
 
 interface CategoryTableProps {
     initialCategories: any[];
@@ -133,6 +134,10 @@ export default function CategoryTable({ initialCategories }: CategoryTableProps)
     const [imageUrl, setImageUrl] = useState<string | null>(null);
     const [originalImageUrl, setOriginalImageUrl] = useState<string | null>(null);
 
+    // Cropper state
+    const [isCropperOpen, setIsCropperOpen] = useState(false);
+    const [pendingImage, setPendingImage] = useState<string | null>(null);
+
     // Helper to get filename from URL
     const getStoragePath = (url: string | null) => {
         if (!url) return null;
@@ -191,12 +196,26 @@ export default function CategoryTable({ initialCategories }: CategoryTableProps)
 
     const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
         try {
-            setUploading(true);
-            if (!event.target.files || event.target.files.length === 0) {
-                return;
-            }
+            const file = event.target.files?.[0];
+            if (!file) return;
 
-            let file = event.target.files[0];
+            const reader = new FileReader();
+            reader.onload = () => {
+                setPendingImage(reader.result as string);
+                setIsCropperOpen(true);
+            };
+            reader.readAsDataURL(file);
+        } catch (error) {
+            console.error("Error reading file:", error);
+        }
+    };
+
+    const handleCropComplete = async (croppedBlob: Blob) => {
+        setIsCropperOpen(false);
+        setUploading(true);
+
+        try {
+            let file = new File([croppedBlob], 'category.jpg', { type: 'image/jpeg' });
 
             // Image compression options
             const options = {
@@ -212,7 +231,7 @@ export default function CategoryTable({ initialCategories }: CategoryTableProps)
                 console.error("Compression error:", error);
             }
 
-            const fileExt = file.name.split('.').pop();
+            const fileExt = 'jpg';
             const fileName = `${Math.random()}.${fileExt}`;
             const filePath = `${fileName}`;
 
@@ -239,6 +258,7 @@ export default function CategoryTable({ initialCategories }: CategoryTableProps)
             console.error(error);
         } finally {
             setUploading(false);
+            setPendingImage(null);
         }
     };
 
@@ -642,6 +662,17 @@ export default function CategoryTable({ initialCategories }: CategoryTableProps)
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+
+            <ImageCropper
+                image={pendingImage}
+                isOpen={isCropperOpen}
+                onCropComplete={handleCropComplete}
+                onCancel={() => {
+                    setIsCropperOpen(false);
+                    setPendingImage(null);
+                }}
+                aspect={16 / 9}
+            />
         </div>
     );
 }

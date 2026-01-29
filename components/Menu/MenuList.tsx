@@ -85,7 +85,7 @@ export default function MenuList({ menu }: { menu: any[] }) {
                             >
                                 {/* Content Area */}
                                 <div className="flex-[1.1] flex flex-col justify-center px-6 sm:px-10 text-left z-10 transition-colors">
-                                    <h3 className="text-zinc-900 font-extrabold text-xl sm:text-3xl leading-none uppercase tracking-tighter">
+                                    <h3 className="text-zinc-900 font-extrabold text-xl sm:text-3xl leading-[1.1] sm:leading-none uppercase tracking-tighter">
                                         {category.title}
                                     </h3>
                                 </div>

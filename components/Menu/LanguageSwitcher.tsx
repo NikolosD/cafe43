@@ -17,6 +17,7 @@ export default function LanguageSwitcher() {
         const params = searchParams.toString();
         const targetPath = params ? `${pathname}?${params}` : pathname;
         router.replace(targetPath, { locale: newLocale as "ru" | "en" | "ge" });
+        window.scrollTo({ top: 0, behavior: 'instant' });
     };
 
     return (
