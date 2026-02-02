@@ -27,8 +27,8 @@ export type Item = {
 
 // --- PUBLIC MENU ---
 
-export async function getPublicMenu(supabase: SupabaseClient, locale: string) {
-    // Fetch categories with all translations
+export async function getPublicMenu(supabase: SupabaseClient, locale: string, categoryId?: string) {
+    // 1. Fetch categories
     const { data: categories, error: catsError } = await supabase
         .from('categories')
         .select(`
@@ -40,42 +40,48 @@ export async function getPublicMenu(supabase: SupabaseClient, locale: string) {
 
     if (catsError) throw catsError;
 
-    // Fetch items with all translations
-    const { data: items, error: itemsError } = await supabase
-        .from('items')
-        .select(`
-            *,
-            item_translations(lang, title, description)
-        `)
-        .eq('is_active', true)
-        .order('sort', { ascending: true });
+    // 2. Fetch items (ONLY if a category is selected)
+    let items: any[] = [];
+    if (categoryId) {
+        const { data: fetchedItems, error: itemsError } = await supabase
+            .from('items')
+            .select(`
+                *,
+                item_translations(lang, title, description)
+            `)
+            .eq('is_active', true)
+            .eq('category_id', categoryId) // Optimize: Filter by category
+            .order('sort', { ascending: true });
 
-    if (itemsError) throw itemsError;
+        if (itemsError) throw itemsError;
+        items = fetchedItems;
+    }
 
-    // Group items by category and handle translations
+    // 3. Group/Format Response
     const menu = categories.map((cat: any) => {
         const translations = cat.category_translations || [];
         const trans = translations.find((t: any) => t.lang === locale) || translations[0];
 
+        // Only attach items if this is the requested category
+        const catItems = (cat.id === categoryId) ? items : [];
+
         return {
             ...cat,
             title: trans?.title || 'Untitled',
-            items: items
-                .filter((item: any) => item.category_id === cat.id)
-                .map((item: any) => {
-                    const iTranslations = item.item_translations || [];
-                    const iTrans = iTranslations.find((t: any) => t.lang === locale) || iTranslations[0];
+            items: catItems.map((item: any) => {
+                const iTranslations = item.item_translations || [];
+                const iTrans = iTranslations.find((t: any) => t.lang === locale) || iTranslations[0];
 
-                    return {
-                        ...item,
-                        title: iTrans?.title || 'Untitled',
-                        description: iTrans?.description || null,
-                        weight: item.weight,
-                        is_new: item.is_new,
-                        is_spicy: item.is_spicy,
-                        is_vegan: item.is_vegan,
-                    };
-                }),
+                return {
+                    ...item,
+                    title: iTrans?.title || 'Untitled',
+                    description: iTrans?.description || null,
+                    weight: item.weight,
+                    is_new: item.is_new,
+                    is_spicy: item.is_spicy,
+                    is_vegan: item.is_vegan,
+                };
+            }),
         };
     });
 

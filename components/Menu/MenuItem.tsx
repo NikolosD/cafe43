@@ -23,7 +23,7 @@ export default function MenuItem({ item, onClick }: MenuItemProps) {
         >
             {/* Фоновый градиент при наведении */}
             <div className="absolute inset-0 bg-gradient-to-br from-primary/0 via-transparent to-accent/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-            
+
             {/* Image */}
             <div className="relative shrink-0 w-20 h-20 rounded-xl overflow-hidden bg-gradient-to-br from-muted to-muted/50 mr-4 shadow-inner">
                 {imageUrl ? (
@@ -31,6 +31,7 @@ export default function MenuItem({ item, onClick }: MenuItemProps) {
                         src={imageUrl}
                         alt={title || "Dish"}
                         fill
+                        sizes="80px"
                         className="object-cover transition-all duration-500 group-hover:scale-110"
                     />
                 ) : (
@@ -38,7 +39,7 @@ export default function MenuItem({ item, onClick }: MenuItemProps) {
                         <Sparkles className="w-6 h-6" />
                     </div>
                 )}
-                
+
                 {/* Блик на изображении при наведении */}
                 <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             </div>

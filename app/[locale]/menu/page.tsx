@@ -19,23 +19,28 @@ export default async function MenuPage({
     const cookieStore = cookies();
     const supabase = createClient(cookieStore);
 
-    const menu = await getPublicMenu(supabase, locale);
+    const activeCategoryId = searchParams.category;
+    // Optimize: Pass activeCategoryId to only fetch relevant items
+    const menu = await getPublicMenu(supabase, locale, activeCategoryId);
+
     const settings = await getSettings(supabase);
 
-    const activeCategoryId = searchParams.category;
     const activeCategory = activeCategoryId ? menu.find((c: any) => c.id === activeCategoryId) : null;
 
     return (
         <div className="min-h-screen bg-[#faf9f7] flex flex-col relative">
             <div className="fixed inset-0 pointer-events-none">
+                {/* Optimized Mobile Background */}
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.02] via-transparent to-accent/[0.02]" />
-                <div className="absolute -top-40 -right-40 w-80 h-80 rounded-full bg-primary/5 blur-3xl" />
-                <div className="absolute top-1/3 -left-20 w-60 h-60 rounded-full bg-accent/5 blur-3xl" />
-                <div className="absolute bottom-20 right-10 w-40 h-40 rounded-full bg-primary/5 blur-2xl" />
+
+                {/* Heavy Blurs - Desktop Only */}
+                <div className="hidden sm:block absolute -top-40 -right-40 w-80 h-80 rounded-full bg-primary/5 blur-3xl" />
+                <div className="hidden sm:block absolute top-1/3 -left-20 w-60 h-60 rounded-full bg-accent/5 blur-3xl" />
+                <div className="hidden sm:block absolute bottom-20 right-10 w-40 h-40 rounded-full bg-primary/5 blur-2xl" />
             </div>
 
             <MenuHeader />
-            
+
             {activeCategory && (
                 <CategoryStickyHeader categoryTitle={activeCategory.title} />
             )}

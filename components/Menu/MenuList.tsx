@@ -56,7 +56,7 @@ export default function MenuList({ menu }: { menu: any[] }) {
                 ) : (
                     // Main Categories Grid
                     <div className="flex flex-col gap-5 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                        {menu.map((category) => (
+                        {menu.map((category, index) => (
                             <button
                                 key={category.id}
                                 onClick={() => {
@@ -72,9 +72,9 @@ export default function MenuList({ menu }: { menu: any[] }) {
                                     <div className="flex items-center gap-3 mb-2">
                                         <div className="p-2.5 rounded-xl bg-gradient-to-br from-primary/10 via-primary/5 to-accent/10 text-primary shadow-sm border border-primary/10">
                                             {category.title.toLowerCase().includes('des') || category.title.toLowerCase().includes('дес') || category.title.toLowerCase().includes('დეს') ? <CakeSlice className="w-6 h-6" strokeWidth={1.5} /> :
-                                             category.title.toLowerCase().includes('hot') || category.title.toLowerCase().includes('горяч') || category.title.toLowerCase().includes('ცხელ') ? <Coffee className="w-6 h-6" strokeWidth={1.5} /> :
-                                             category.title.toLowerCase().includes('cold') || category.title.toLowerCase().includes('холод') || category.title.toLowerCase().includes('ცივი') ? <GlassWater className="w-6 h-6" strokeWidth={1.5} /> :
-                                             <Sparkles className="w-6 h-6" strokeWidth={1.5} />}
+                                                category.title.toLowerCase().includes('hot') || category.title.toLowerCase().includes('горяч') || category.title.toLowerCase().includes('ცხელ') ? <Coffee className="w-6 h-6" strokeWidth={1.5} /> :
+                                                    category.title.toLowerCase().includes('cold') || category.title.toLowerCase().includes('холод') || category.title.toLowerCase().includes('ცივი') ? <GlassWater className="w-6 h-6" strokeWidth={1.5} /> :
+                                                        <Sparkles className="w-6 h-6" strokeWidth={1.5} />}
                                         </div>
                                     </div>
                                     <h3 className="text-zinc-900 font-extrabold text-xl sm:text-3xl leading-[1.1] sm:leading-none uppercase tracking-tighter">
@@ -90,8 +90,8 @@ export default function MenuList({ menu }: { menu: any[] }) {
                                                 src={category.image_url}
                                                 alt={category.title || "Category"}
                                                 fill
-                                                priority
-                                                sizes="(max-width: 768px) 50vw, 33vw"
+                                                priority={index < 4}
+                                                sizes="(max-width: 768px) 100vw, 33vw"
                                                 className="object-cover transition-transform duration-1000 group-hover:scale-110"
                                             />
                                             {/* Refined Smooth Gradient Fade */}

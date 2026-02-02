@@ -1,6 +1,9 @@
+'use client';
+
 import { Item } from '@/lib/db';
 import MenuItem from './MenuItem';
 import { UtensilsCrossed } from 'lucide-react';
+import { Virtuoso } from 'react-virtuoso';
 
 interface CategorySectionProps {
     id: string;
@@ -25,15 +28,21 @@ export default function CategorySection({ id, title, items, onSelectItem }: Cate
                     <div className="flex-1 h-px bg-gradient-to-r from-border to-transparent ml-2" />
                 </div>
             )}
-            <div className="grid grid-cols-1 gap-3">
-                {items.map((item) => (
-                    <MenuItem
-                        key={item.id}
-                        item={item}
-                        onClick={onSelectItem}
-                    />
-                ))}
-            </div>
+            {/* Virtualized List using Window Scroll */}
+            <Virtuoso
+                useWindowScroll
+                data={items}
+                increaseViewportBy={500}
+                itemContent={(index, item) => (
+                    <div className="pb-3">
+                        <MenuItem
+                            key={item.id}
+                            item={item}
+                            onClick={onSelectItem}
+                        />
+                    </div>
+                )}
+            />
         </section>
     );
 }
