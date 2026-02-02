@@ -23,8 +23,8 @@ export default function LanguageSwitcher() {
         localStorage.setItem('NEXT_LOCALE', newLocale);
         const params = searchParams.toString();
         const targetPath = params ? `${pathname}?${params}` : pathname;
-        router.replace(targetPath, { locale: newLocale as "ru" | "en" | "ge" });
-        window.scrollTo({ top: 0, behavior: 'instant' });
+        // Используем push вместо replace для быстрой навигации
+        router.push(targetPath, { locale: newLocale as "ru" | "en" | "ge" });
     };
 
     const currentLang = languages.find(l => l.code === locale);

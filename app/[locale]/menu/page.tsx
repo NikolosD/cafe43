@@ -6,6 +6,9 @@ import MenuList from '@/components/Menu/MenuList';
 import MenuFooter from '@/components/Menu/MenuFooter';
 import CategoryStickyHeader from '@/components/Menu/CategoryStickyHeader';
 
+// ISR - кэширование страницы
+export const revalidate = 60;
+
 export default async function MenuPage({
     params: { locale },
     searchParams
@@ -24,11 +27,8 @@ export default async function MenuPage({
 
     return (
         <div className="min-h-screen bg-[#faf9f7] flex flex-col relative">
-            {/* Subtle gradient background */}
             <div className="fixed inset-0 pointer-events-none">
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.02] via-transparent to-accent/[0.02]" />
-                
-                {/* Decorative circles */}
                 <div className="absolute -top-40 -right-40 w-80 h-80 rounded-full bg-primary/5 blur-3xl" />
                 <div className="absolute top-1/3 -left-20 w-60 h-60 rounded-full bg-accent/5 blur-3xl" />
                 <div className="absolute bottom-20 right-10 w-40 h-40 rounded-full bg-primary/5 blur-2xl" />
@@ -36,7 +36,6 @@ export default async function MenuPage({
 
             <MenuHeader />
             
-            {/* Sticky Category Header - клиентский компонент для быстрой навигации */}
             {activeCategory && (
                 <CategoryStickyHeader categoryTitle={activeCategory.title} />
             )}

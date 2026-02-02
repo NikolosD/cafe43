@@ -28,13 +28,13 @@ export type Item = {
 // --- PUBLIC MENU ---
 
 export async function getPublicMenu(supabase: SupabaseClient, locale: string) {
-    // Fetch categories with all translations to avoid filtering out records
+    // Fetch categories with all translations
     const { data: categories, error: catsError } = await supabase
         .from('categories')
         .select(`
-      *,
-      category_translations(lang, title)
-    `)
+            *,
+            category_translations(lang, title)
+        `)
         .eq('is_active', true)
         .order('sort', { ascending: true });
 
@@ -44,17 +44,16 @@ export async function getPublicMenu(supabase: SupabaseClient, locale: string) {
     const { data: items, error: itemsError } = await supabase
         .from('items')
         .select(`
-      *,
-      item_translations(lang, title, description)
-    `)
+            *,
+            item_translations(lang, title, description)
+        `)
         .eq('is_active', true)
         .order('sort', { ascending: true });
 
     if (itemsError) throw itemsError;
 
-    // Group items by category and handle translations with fallback
+    // Group items by category and handle translations
     const menu = categories.map((cat: any) => {
-        // Find best translation: current locale -> any available
         const translations = cat.category_translations || [];
         const trans = translations.find((t: any) => t.lang === locale) || translations[0];
 
