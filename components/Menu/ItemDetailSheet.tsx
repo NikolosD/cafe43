@@ -3,15 +3,13 @@
 import {
     Sheet,
     SheetContent,
-    SheetHeader,
-    SheetTitle,
 } from "@/components/ui/sheet";
-import { Badge } from "lucide-react"; // Actually let's just use div for badges to stay vanilla
 import { X, Flame, Leaf, Sparkles, Scale } from "lucide-react";
 import { Item } from "@/lib/db";
 import { cn } from "@/lib/utils";
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
+import { useRef, useState, useCallback } from 'react';
 
 interface ItemDetailSheetProps {
     item: Item | null;
@@ -22,24 +20,89 @@ interface ItemDetailSheetProps {
 export default function ItemDetailSheet({ item, isOpen, onClose }: ItemDetailSheetProps) {
     const t = useTranslations('Menu');
     const ta = useTranslations('Admin');
+    
+    // Swipe handling
+    const sheetRef = useRef<HTMLDivElement>(null);
+    const [isDragging, setIsDragging] = useState(false);
+    const dragStartY = useRef(0);
+    const currentTranslateY = useRef(0);
+
+    const handleTouchStart = useCallback((e: React.TouchEvent | React.MouseEvent) => {
+        const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+        dragStartY.current = clientY;
+        setIsDragging(true);
+    }, []);
+
+    const handleTouchMove = useCallback((e: React.TouchEvent | React.MouseEvent) => {
+        if (!isDragging) return;
+        const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+        const deltaY = clientY - dragStartY.current;
+        
+        if (deltaY > 0) {
+            currentTranslateY.current = deltaY;
+            if (sheetRef.current) {
+                sheetRef.current.style.transform = `translateY(${deltaY}px)`;
+            }
+        }
+    }, [isDragging]);
+
+    const handleTouchEnd = useCallback(() => {
+        setIsDragging(false);
+        const threshold = 150; // min swipe distance to close
+        
+        if (currentTranslateY.current > threshold) {
+            onClose();
+        } else {
+            // Reset position
+            if (sheetRef.current) {
+                sheetRef.current.style.transform = '';
+                sheetRef.current.style.transition = 'transform 0.3s ease-out';
+                setTimeout(() => {
+                    if (sheetRef.current) {
+                        sheetRef.current.style.transition = '';
+                    }
+                }, 300);
+            }
+        }
+        currentTranslateY.current = 0;
+    }, [onClose]);
+    
     if (!item) return null;
 
     return (
         <Sheet open={isOpen} onOpenChange={onClose}>
-            {/* @ts-ignore */}
             <SheetContent
                 side="bottom"
+                showCloseButton={false}
                 className="h-[88dvh] sm:h-[85vh] sm:max-w-xl sm:left-1/2 sm:-translate-x-1/2 p-0 overflow-hidden rounded-t-[32px] border-none bg-white focus-visible:ring-0 shadow-2xl"
             >
-                {/* Drag Handle */}
-                <div className="absolute top-2 left-1/2 -translate-x-1/2 w-12 h-1.5 bg-zinc-200 rounded-full z-50" />
+                <div 
+                    ref={sheetRef}
+                    className="h-full flex flex-col overflow-y-auto scrollbar-hide touch-pan-y"
+                    style={{ willChange: 'transform' }}
+                >
+                    {/* Drag Handle - Swipe area */}
+                    <div 
+                        className="absolute top-0 left-0 right-0 h-12 z-50 flex items-center justify-center cursor-grab active:cursor-grabbing"
+                        onTouchStart={handleTouchStart}
+                        onTouchMove={handleTouchMove}
+                        onTouchEnd={handleTouchEnd}
+                        onMouseDown={handleTouchStart}
+                        onMouseMove={handleTouchMove}
+                        onMouseUp={handleTouchEnd}
+                        onMouseLeave={handleTouchEnd}
+                    >
+                        <div className={cn(
+                            "w-10 h-1.5 bg-zinc-300 rounded-full transition-all",
+                            isDragging && "w-12 bg-zinc-400"
+                        )} />
+                    </div>
 
-                <div className="h-full flex flex-col overflow-y-auto pb-10">
                     {/* Hero Image */}
-                    <div className="relative aspect-square sm:aspect-video w-full bg-zinc-100 shrink-0">
+                    <div className="relative w-full h-[45vh] sm:h-[40vh] max-h-[400px] bg-gradient-to-br from-muted to-muted/50 shrink-0 pt-8">
                         {item.image_url ? (
                             <Image
-                                src={item.image_url!}
+                                src={item.image_url}
                                 alt={item.title || "Dish"}
                                 fill
                                 priority
@@ -47,63 +110,84 @@ export default function ItemDetailSheet({ item, isOpen, onClose }: ItemDetailShe
                                 className="w-full h-full object-cover"
                             />
                         ) : (
-                            <div className="w-full h-full flex items-center justify-center text-zinc-300">
-                                <Sparkles className="w-12 h-12 opacity-20" />
+                            <div className="w-full h-full flex items-center justify-center text-muted-foreground/30">
+                                <Sparkles className="w-16 h-16" />
                             </div>
                         )}
 
-                        {/* Custom Close Button for mobile feel - moved slightly down and left from the corner */}
+                        {/* Gradient overlay at bottom */}
+                        <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-white via-white/30 to-transparent" />
+
+                        {/* Custom Close Button */}
                         <button
                             onClick={onClose}
-                            className="absolute top-5 right-5 p-2 bg-black/50 backdrop-blur-md text-white rounded-full hover:bg-black/70 transition-colors z-50 shadow-lg"
+                            className="absolute top-10 right-5 p-2.5 bg-white/90 backdrop-blur-md text-foreground rounded-full hover:bg-white transition-all duration-300 z-50 shadow-lg hover:shadow-xl hover:scale-105 active:scale-95"
                         >
                             <X className="w-5 h-5" />
                         </button>
 
                         {/* Top Badges */}
-                        <div className="absolute top-5 left-5 flex flex-wrap gap-2">
+                        <div className="absolute top-10 left-5 flex flex-wrap gap-2">
                             {item.is_new && (
-                                <div className="px-3 py-1 bg-yellow-400 text-black text-[10px] font-bold uppercase tracking-wider rounded-full flex items-center gap-1 shadow-lg">
-                                    <Sparkles className="w-3 h-3" /> {ta('new')}
+                                <div className="px-3 py-1.5 bg-gradient-to-r from-yellow-400 to-orange-400 text-white text-[10px] font-bold uppercase tracking-wider rounded-full flex items-center gap-1.5 shadow-lg">
+                                    <Sparkles className="w-3.5 h-3.5" /> {ta('new')}
                                 </div>
                             )}
                         </div>
                     </div>
 
                     {/* Content Section */}
-                    <div className="px-6 py-8 space-y-6">
-                        <div className="flex justify-between items-start gap-4">
-                            <div className="space-y-1">
-                                <h2 className="text-3xl font-black tracking-tight text-zinc-900 leading-tight">
-                                    {item.title}
-                                </h2>
-                                <div className="flex items-center gap-3">
-                                    {item.weight && (
-                                        <div className="flex items-center gap-1.5 text-zinc-500 text-sm font-medium">
-                                            <Scale className="w-4 h-4" />
-                                            {item.weight}
-                                        </div>
-                                    )}
-                                    <div className="flex gap-2">
-                                        {item.is_spicy && (
-                                            <Flame className="w-5 h-5 text-red-500 fill-red-500" />
-                                        )}
-                                        {item.is_vegan && (
-                                            <Leaf className="w-5 h-5 text-emerald-500 fill-emerald-500" />
+                    <div className="px-6 py-2 space-y-6 -mt-6 relative">
+                        {/* Title & Price */}
+                        <div className="space-y-4">
+                            <div className="flex justify-between items-start gap-4">
+                                <div className="space-y-2 flex-1">
+                                    <h2 className="text-3xl font-bold tracking-tight text-foreground leading-tight font-display">
+                                        {item.title}
+                                    </h2>
+                                    <div className="flex items-center gap-3 flex-wrap">
+                                        {item.weight && (
+                                            <div className="flex items-center gap-1.5 text-muted-foreground text-sm font-medium bg-muted/50 px-2.5 py-1 rounded-lg">
+                                                <Scale className="w-4 h-4 text-primary" />
+                                                {item.weight}
+                                            </div>
                                         )}
                                     </div>
                                 </div>
+                                <div className="text-2xl font-bold text-white whitespace-nowrap bg-gradient-to-br from-primary to-accent px-5 py-2.5 rounded-2xl shadow-lg shadow-primary/20">
+                                    {item.price} ₾
+                                </div>
                             </div>
-                            <div className="text-2xl font-black text-zinc-900 whitespace-nowrap bg-zinc-50 px-4 py-2 rounded-2xl border border-zinc-100">
-                                {item.price} ₾
+
+                            {/* Icons row */}
+                            <div className="flex gap-3">
+                                {item.is_spicy && (
+                                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-red-50 text-red-500 text-sm font-medium">
+                                        <Flame className="w-4 h-4 fill-red-500" />
+                                        Spicy
+                                    </div>
+                                )}
+                                {item.is_vegan && (
+                                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-500 text-sm font-medium">
+                                        <Leaf className="w-4 h-4 fill-emerald-500" />
+                                        Vegan
+                                    </div>
+                                )}
                             </div>
                         </div>
+
+                        {/* Divider */}
+                        <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent" />
 
                         {/* Description */}
                         {item.description && (
                             <div className="space-y-3">
-                                <h3 className="text-sm font-bold uppercase tracking-widest text-zinc-400">{t('description')}</h3>
-                                <p className="text-zinc-600 leading-relaxed text-lg">
+                                <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground/70 flex items-center gap-2">
+                                    <span className="w-4 h-px bg-primary/50" />
+                                    {t('description')}
+                                    <span className="w-4 h-px bg-primary/50" />
+                                </h3>
+                                <p className="text-foreground/80 leading-relaxed text-lg">
                                     {item.description}
                                 </p>
                             </div>
@@ -111,10 +195,13 @@ export default function ItemDetailSheet({ item, isOpen, onClose }: ItemDetailShe
 
                         {/* Status Badges */}
                         {!item.is_active && (
-                            <div className="mt-8 p-4 bg-zinc-100 rounded-2xl text-center font-bold text-zinc-500 uppercase tracking-widest border-2 border-dashed border-zinc-200">
+                            <div className="mt-8 p-4 bg-muted rounded-2xl text-center font-bold text-muted-foreground uppercase tracking-widest border-2 border-dashed border-muted-foreground/20">
                                 {ta('sold_out')}
                             </div>
                         )}
+
+                        {/* Bottom spacing */}
+                        <div className="h-8" />
                     </div>
                 </div>
             </SheetContent>

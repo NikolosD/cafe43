@@ -1,5 +1,6 @@
 import { Item } from '@/lib/db';
 import MenuItem from './MenuItem';
+import { UtensilsCrossed } from 'lucide-react';
 
 interface CategorySectionProps {
     id: string;
@@ -12,13 +13,19 @@ export default function CategorySection({ id, title, items, onSelectItem }: Cate
     if (items.length === 0) return null;
 
     return (
-        <section id={id} className="scroll-mt-24 py-4">
+        <section id={id} className="scroll-mt-24 py-2">
             {title && (
-                <h2 className="text-2xl font-bold mb-6 text-foreground/90 tracking-tight px-1 uppercase text-sm">
-                    {title}
-                </h2>
+                <div className="flex items-center gap-3 mb-6 px-1">
+                    <div className="p-2 rounded-xl bg-primary/10 text-primary">
+                        <UtensilsCrossed className="w-4 h-4" />
+                    </div>
+                    <h2 className="text-xl font-bold text-foreground/90 tracking-tight font-display">
+                        {title}
+                    </h2>
+                    <div className="flex-1 h-px bg-gradient-to-r from-border to-transparent ml-2" />
+                </div>
             )}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-3">
                 {items.map((item) => (
                     <MenuItem
                         key={item.id}

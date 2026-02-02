@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { Search, ChevronLeft } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import CategorySection from './CategorySection';
 import EmptyState from './EmptyState';
@@ -11,6 +11,7 @@ import Image from 'next/image';
 import ItemDetailSheet from './ItemDetailSheet';
 import { useTranslations } from 'next-intl';
 import { Item } from '@/lib/db';
+import { CakeSlice, Coffee, GlassWater, Sparkles } from 'lucide-react';
 
 export default function MenuList({ menu }: { menu: any[] }) {
     const t = useTranslations('Menu');
@@ -31,33 +32,16 @@ export default function MenuList({ menu }: { menu: any[] }) {
 
     if (!mounted) {
         return (
-            <div className="space-y-8 mt-6 max-w-3xl mx-auto px-4">
-                <div className="grid grid-cols-2 gap-4">
-                    {[1, 2, 3, 4].map(i => <Skeleton key={i} className="aspect-square rounded-2xl" />)}
-                </div>
+            <div className="pt-6 max-w-3xl mx-auto px-4 pb-24 space-y-5">
+                {[1, 2, 3].map(i => (
+                    <Skeleton key={i} className="h-36 sm:h-48 w-full rounded-3xl" />
+                ))}
             </div>
         );
     }
 
     return (
-        <div className="space-y-6 max-w-3xl mx-auto px-4 pb-24">
-            {/* Back Button for Item View */}
-            {activeCategoryId && (
-                <div className="flex items-center gap-2 sticky top-16 z-40 py-2 bg-background/80 backdrop-blur-md -mx-4 px-4 border-b border-black/5 mb-4">
-                    <button
-                        onClick={() => {
-                            const params = new URLSearchParams(searchParams.toString());
-                            params.delete('category');
-                            router.push(`${pathname}?${params.toString()}`);
-                        }}
-                        className="p-2 hover:bg-black/5 rounded-full transition-colors"
-                    >
-                        <ChevronLeft className="w-6 h-6" />
-                    </button>
-                    <h2 className="text-xl font-bold tracking-tight text-foreground/90">{activeCategory?.title}</h2>
-                </div>
-            )}
-
+        <div className={cn("max-w-3xl mx-auto px-4 pb-24", activeCategoryId ? "pt-4" : "pt-6")}>
             {/* Content View */}
             <div className="min-h-[40vh]">
                 {activeCategoryId ? (
@@ -85,6 +69,14 @@ export default function MenuList({ menu }: { menu: any[] }) {
                             >
                                 {/* Content Area */}
                                 <div className="flex-[1.1] flex flex-col justify-center px-6 sm:px-10 text-left z-10 transition-colors">
+                                    <div className="flex items-center gap-3 mb-2">
+                                        <div className="p-2.5 rounded-xl bg-gradient-to-br from-primary/10 via-primary/5 to-accent/10 text-primary shadow-sm border border-primary/10">
+                                            {category.title.toLowerCase().includes('des') || category.title.toLowerCase().includes('дес') || category.title.toLowerCase().includes('დეს') ? <CakeSlice className="w-6 h-6" strokeWidth={1.5} /> :
+                                             category.title.toLowerCase().includes('hot') || category.title.toLowerCase().includes('горяч') || category.title.toLowerCase().includes('ცხელ') ? <Coffee className="w-6 h-6" strokeWidth={1.5} /> :
+                                             category.title.toLowerCase().includes('cold') || category.title.toLowerCase().includes('холод') || category.title.toLowerCase().includes('ცივი') ? <GlassWater className="w-6 h-6" strokeWidth={1.5} /> :
+                                             <Sparkles className="w-6 h-6" strokeWidth={1.5} />}
+                                        </div>
+                                    </div>
                                     <h3 className="text-zinc-900 font-extrabold text-xl sm:text-3xl leading-[1.1] sm:leading-none uppercase tracking-tighter">
                                         {category.title}
                                     </h3>
