@@ -9,7 +9,7 @@ import { Item } from "@/lib/db";
 import { cn } from "@/lib/utils";
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
-import { useRef, useState, useCallback } from 'react';
+import { useRef, useState, useCallback, useEffect } from 'react';
 
 interface ItemDetailSheetProps {
     item: Item | null;
@@ -26,15 +26,54 @@ export default function ItemDetailSheet({ item, isOpen, onClose }: ItemDetailShe
     const [isDragging, setIsDragging] = useState(false);
     const dragStartY = useRef(0);
     const currentTranslateY = useRef(0);
+    const isDraggingRef = useRef(false);
+
+    // Fix for orientation change - reset position
+    useEffect(() => {
+        const handleOrientationChange = () => {
+            // Reset transform on orientation change to prevent crash
+            if (sheetRef.current) {
+                sheetRef.current.style.transform = '';
+                sheetRef.current.style.transition = '';
+            }
+            currentTranslateY.current = 0;
+            setIsDragging(false);
+            isDraggingRef.current = false;
+        };
+
+        window.addEventListener('orientationchange', handleOrientationChange);
+        window.addEventListener('resize', handleOrientationChange);
+
+        return () => {
+            window.removeEventListener('orientationchange', handleOrientationChange);
+            window.removeEventListener('resize', handleOrientationChange);
+        };
+    }, []);
+
+    // Cleanup on unmount
+    useEffect(() => {
+        return () => {
+            if (sheetRef.current) {
+                sheetRef.current.style.transform = '';
+            }
+        };
+    }, []);
 
     const handleTouchStart = useCallback((e: React.TouchEvent | React.MouseEvent) => {
         const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
         dragStartY.current = clientY;
         setIsDragging(true);
+        isDraggingRef.current = true;
     }, []);
 
     const handleTouchMove = useCallback((e: React.TouchEvent | React.MouseEvent) => {
-        if (!isDragging) return;
+        if (!isDraggingRef.current) return;
+        
+        // Prevent default to avoid scroll conflicts
+        if ('touches' in e) {
+            e.preventDefault();
+        }
+        
         const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
         const deltaY = clientY - dragStartY.current;
         
@@ -44,9 +83,10 @@ export default function ItemDetailSheet({ item, isOpen, onClose }: ItemDetailShe
                 sheetRef.current.style.transform = `translateY(${deltaY}px)`;
             }
         }
-    }, [isDragging]);
+    }, []);
 
     const handleTouchEnd = useCallback(() => {
+        isDraggingRef.current = false;
         setIsDragging(false);
         const threshold = 150; // min swipe distance to close
         
@@ -66,6 +106,14 @@ export default function ItemDetailSheet({ item, isOpen, onClose }: ItemDetailShe
         }
         currentTranslateY.current = 0;
     }, [onClose]);
+
+    // Reset transform when sheet opens
+    useEffect(() => {
+        if (isOpen && sheetRef.current) {
+            sheetRef.current.style.transform = '';
+            currentTranslateY.current = 0;
+        }
+    }, [isOpen]);
     
     if (!item) return null;
 
@@ -75,11 +123,15 @@ export default function ItemDetailSheet({ item, isOpen, onClose }: ItemDetailShe
                 side="bottom"
                 showCloseButton={false}
                 className="h-[88dvh] sm:h-[85vh] sm:max-w-xl sm:left-1/2 sm:-translate-x-1/2 p-0 overflow-hidden rounded-t-[32px] border-none bg-white focus-visible:ring-0 shadow-2xl"
+                style={{ 
+                    // Prevent layout shift on orientation change
+                    maxHeight: 'calc(100dvh - 40px)'
+                }}
             >
                 <div 
                     ref={sheetRef}
                     className="h-full flex flex-col overflow-y-auto scrollbar-hide touch-pan-y"
-                    style={{ willChange: 'transform' }}
+                    style={{ willChange: isDragging ? 'transform' : 'auto' }}
                 >
                     {/* Drag Handle - Swipe area */}
                     <div 

@@ -33,6 +33,8 @@ export default function MenuItem({ item, onClick }: MenuItemProps) {
                         fill
                         sizes="80px"
                         className="object-cover transition-all duration-500 group-hover:scale-110"
+                        loading="lazy"
+                        decoding="async"
                     />
                 ) : (
                     <div className="w-full h-full flex items-center justify-center text-muted-foreground/30">

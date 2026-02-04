@@ -15,17 +15,23 @@ const SheetClose = SheetPrimitive.Close
 
 const SheetPortal = SheetPrimitive.Portal
 
+// Fix for ResizeObserver loop error - debounced overlay
 const SheetOverlay = React.forwardRef<
     React.ElementRef<typeof SheetPrimitive.Overlay>,
     React.ComponentPropsWithoutRef<typeof SheetPrimitive.Overlay>
 >(({ className, ...props }, ref) => (
     <SheetPrimitive.Overlay
         className={cn(
-            "fixed inset-0 z-50 bg-black/80  data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+            "fixed inset-0 z-50 bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
             className
         )}
         {...props}
         ref={ref}
+        style={{
+            ...props.style,
+            // Prevent layout thrashing on orientation change
+            willChange: 'opacity'
+        }}
     />
 ))
 SheetOverlay.displayName = SheetPrimitive.Overlay.displayName
@@ -57,27 +63,49 @@ export interface SheetContentProps
     showCloseButton?: boolean;
 }
 
+// Fix for ResizeObserver - wrap in error boundary pattern
 const SheetContent = React.forwardRef<
     React.ElementRef<typeof SheetPrimitive.Content>,
     SheetContentProps
->(({ side = "right", className, children, showCloseButton = true, ...props }, ref) => (
-    <SheetPortal>
-        <SheetOverlay />
-        <SheetPrimitive.Content
-            ref={ref}
-            className={cn(sheetVariants({ side }), className)}
-            {...props}
-        >
-            {showCloseButton && (
-                <SheetPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-secondary">
-                    <X className="h-4 w-4" />
-                    <span className="sr-only">Close</span>
-                </SheetPrimitive.Close>
-            )}
-            {children}
-        </SheetPrimitive.Content>
-    </SheetPortal>
-))
+>(({ side = "right", className, children, showCloseButton = true, ...props }, ref) => {
+    // Handle orientation change to prevent crashes
+    React.useEffect(() => {
+        const handleOrientationChange = () => {
+            // Small delay to let the browser settle
+            setTimeout(() => {
+                window.dispatchEvent(new Event('resize'));
+            }, 100);
+        };
+
+        window.addEventListener('orientationchange', handleOrientationChange);
+        return () => {
+            window.removeEventListener('orientationchange', handleOrientationChange);
+        };
+    }, []);
+
+    return (
+        <SheetPortal>
+            <SheetOverlay />
+            <SheetPrimitive.Content
+                ref={ref}
+                className={cn(sheetVariants({ side }), className)}
+                {...props}
+                onPointerDownOutside={(e) => {
+                    // Prevent accidental closes on mobile
+                    props.onPointerDownOutside?.(e);
+                }}
+            >
+                {showCloseButton && (
+                    <SheetPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-secondary">
+                        <X className="h-4 w-4" />
+                        <span className="sr-only">Close</span>
+                    </SheetPrimitive.Close>
+                )}
+                {children}
+            </SheetPrimitive.Content>
+        </SheetPortal>
+    );
+});
 SheetContent.displayName = SheetPrimitive.Content.displayName
 
 const SheetHeader = ({

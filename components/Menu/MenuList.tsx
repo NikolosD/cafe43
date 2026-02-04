@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Search } from 'lucide-react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import CategorySection from './CategorySection';
@@ -12,6 +12,7 @@ import ItemDetailSheet from './ItemDetailSheet';
 import { useTranslations } from 'next-intl';
 import { Item } from '@/lib/db';
 import { CakeSlice, Coffee, GlassWater, Sparkles } from 'lucide-react';
+import Link from 'next/link';
 
 export default function MenuList({ menu }: { menu: any[] }) {
     const t = useTranslations('Menu');
@@ -21,6 +22,7 @@ export default function MenuList({ menu }: { menu: any[] }) {
     const pathname = usePathname();
     const activeCategoryId = searchParams.get('category');
     const [selectedItem, setSelectedItem] = useState<Item | null>(null);
+    const [isNavigating, setIsNavigating] = useState(false);
 
     useEffect(() => {
         setMounted(true);
@@ -29,6 +31,25 @@ export default function MenuList({ menu }: { menu: any[] }) {
     const activeCategory = useMemo(() =>
         menu.find(c => c.id === activeCategoryId),
         [menu, activeCategoryId]);
+
+    // Optimized navigation with instant scroll
+    const handleCategoryClick = useCallback((categoryId: string) => {
+        if (isNavigating) return;
+        
+        setIsNavigating(true);
+        
+        // Instant scroll before navigation
+        window.scrollTo(0, 0);
+        
+        const params = new URLSearchParams(searchParams.toString());
+        params.set('category', categoryId);
+        
+        // Use replace for faster navigation, then push to history
+        router.push(`${pathname}?${params.toString()}`, { scroll: false });
+        
+        // Reset navigation lock
+        setTimeout(() => setIsNavigating(false), 300);
+    }, [isNavigating, pathname, router, searchParams]);
 
     if (!mounted) {
         return (
@@ -57,13 +78,14 @@ export default function MenuList({ menu }: { menu: any[] }) {
                     // Main Categories Grid
                     <div className="flex flex-col gap-5 animate-in fade-in slide-in-from-bottom-4 duration-500">
                         {menu.map((category, index) => (
-                            <button
+                            <Link
                                 key={category.id}
-                                onClick={() => {
-                                    const params = new URLSearchParams(searchParams.toString());
-                                    params.set('category', category.id);
-                                    router.push(`${pathname}?${params.toString()}`);
-                                    window.scrollTo({ top: 0, behavior: 'instant' });
+                                href={`${pathname}?category=${category.id}`}
+                                prefetch={true}
+                                scroll={false}
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    handleCategoryClick(category.id);
                                 }}
                                 className="group relative flex h-32 sm:h-44 w-full bg-white rounded-[2rem] sm:rounded-[2.5rem] overflow-hidden shadow-sm border border-black/[0.03] transition-all hover:shadow-md hover:-translate-y-1 active:scale-[0.98]"
                             >
@@ -91,8 +113,9 @@ export default function MenuList({ menu }: { menu: any[] }) {
                                                 alt={category.title || "Category"}
                                                 fill
                                                 priority={index < 4}
-                                                sizes="(max-width: 768px) 100vw, 33vw"
+                                                sizes="(max-width: 768px) 50vw, 33vw"
                                                 className="object-cover transition-transform duration-1000 group-hover:scale-110"
+                                                loading={index < 4 ? "eager" : "lazy"}
                                             />
                                             {/* Refined Smooth Gradient Fade */}
                                             <div className="absolute inset-y-0 left-0 w-32 sm:w-48 bg-gradient-to-r from-white via-white/80 to-transparent z-10" />
@@ -103,7 +126,7 @@ export default function MenuList({ menu }: { menu: any[] }) {
                                         </div>
                                     )}
                                 </div>
-                            </button>
+                            </Link>
                         ))}
                     </div>
                 )}

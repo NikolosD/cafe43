@@ -3,6 +3,7 @@
 import { Link } from '@/lib/navigation';
 import { useLocale } from 'next-intl';
 import { CakeSlice, Coffee, GlassWater, Sparkles } from 'lucide-react';
+import { useCallback } from 'react';
 
 interface CategoryStickyHeaderProps {
     categoryTitle: string;
@@ -25,12 +26,20 @@ function getCategoryIcon(title: string) {
 export default function CategoryStickyHeader({ categoryTitle }: CategoryStickyHeaderProps) {
     const locale = useLocale();
 
+    const handleBackClick = useCallback((e: React.MouseEvent) => {
+        // Instant scroll to top before navigation
+        window.scrollTo(0, 0);
+    }, []);
+
     return (
         <div className="sticky top-14 sm:top-16 z-40 w-full bg-white/90 backdrop-blur-xl border-b border-black/10 shadow-sm">
             <div className="max-w-3xl mx-auto px-4 py-3">
                 <div className="flex items-center gap-3">
                     <Link 
                         href="/menu"
+                        prefetch={true}
+                        scroll={false}
+                        onClick={handleBackClick}
                         className="p-2.5 hover:bg-black/5 rounded-full transition-all duration-300 hover:scale-105 active:scale-95"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
