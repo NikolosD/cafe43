@@ -11,7 +11,8 @@ export default function ResizeObserverFix() {
             if (
                 typeof args[0] === 'string' &&
                 (args[0].includes('ResizeObserver loop') ||
-                 args[0].includes('ResizeObserver Loop'))
+                 args[0].includes('ResizeObserver Loop') ||
+                 args[0].includes('ResizeObserver'))
             ) {
                 // Ignore ResizeObserver errors
                 return;
@@ -19,12 +20,14 @@ export default function ResizeObserverFix() {
             originalError.apply(window.console, args);
         };
 
-        // Also handle error events
+        // Also handle error events - more aggressive for Chrome iOS
         const handleError = (event: ErrorEvent) => {
             if (
                 event.message &&
-                (event.message.includes('ResizeObserver loop') ||
-                 event.message.includes('ResizeObserver Loop'))
+                (event.message.includes('ResizeObserver') ||
+                 event.message.includes('resizeObserver') ||
+                 event.message.includes('intersection') ||
+                 event.message.includes('InterObserver'))
             ) {
                 event.preventDefault();
                 event.stopPropagation();
@@ -32,11 +35,24 @@ export default function ResizeObserverFix() {
             }
         };
 
+        // Handle unhandled promise rejections (Chrome iOS specific)
+        const handleRejection = (event: PromiseRejectionEvent) => {
+            if (
+                event.reason && 
+                typeof event.reason.message === 'string' &&
+                event.reason.message.includes('ResizeObserver')
+            ) {
+                event.preventDefault();
+            }
+        };
+
         window.addEventListener('error', handleError, true);
+        window.addEventListener('unhandledrejection', handleRejection, true);
 
         return () => {
             window.console.error = originalError;
             window.removeEventListener('error', handleError, true);
+            window.removeEventListener('unhandledrejection', handleRejection, true);
         };
     }, []);
 

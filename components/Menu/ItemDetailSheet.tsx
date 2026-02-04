@@ -18,9 +18,16 @@ interface ItemDetailSheetProps {
     onClose: () => void;
 }
 
+// Detect Chrome on iOS
+const isChromeIOS = () => {
+    if (typeof navigator === 'undefined') return false;
+    return /CriOS/.test(navigator.userAgent);
+};
+
 export default function ItemDetailSheet({ item, isOpen, onClose }: ItemDetailSheetProps) {
     const t = useTranslations('Menu');
     const ta = useTranslations('Admin');
+    const [isChromeOnIOS] = useState(() => isChromeIOS());
     
     // Swipe handling
     const sheetRef = useRef<HTMLDivElement>(null);
@@ -28,67 +35,127 @@ export default function ItemDetailSheet({ item, isOpen, onClose }: ItemDetailShe
     const dragStartY = useRef(0);
     const currentTranslateY = useRef(0);
     const isDraggingRef = useRef(false);
+    const touchIdRef = useRef<number | null>(null);
 
     // Fix for orientation change - reset position
     useEffect(() => {
+        let resizeTimeout: NodeJS.Timeout;
+        
         const handleOrientationChange = () => {
-            // Reset transform on orientation change to prevent crash
-            if (sheetRef.current) {
-                sheetRef.current.style.transform = '';
-                sheetRef.current.style.transition = '';
+            // Close sheet on orientation change for Chrome iOS to prevent crash
+            if (isChromeOnIOS && isOpen) {
+                onClose();
+                return;
             }
-            currentTranslateY.current = 0;
-            setIsDragging(false);
-            isDraggingRef.current = false;
+            
+            // For other browsers, reset with delay
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                if (sheetRef.current) {
+                    sheetRef.current.style.transform = '';
+                    sheetRef.current.style.transition = '';
+                    sheetRef.current.style.willChange = 'auto';
+                }
+                currentTranslateY.current = 0;
+                setIsDragging(false);
+                isDraggingRef.current = false;
+            }, isChromeOnIOS ? 500 : 100);
         };
 
-        window.addEventListener('orientationchange', handleOrientationChange);
-        window.addEventListener('resize', handleOrientationChange);
+        window.addEventListener('orientationchange', handleOrientationChange, { passive: true });
+        
+        // Chrome iOS fires resize multiple times
+        const handleResize = () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                if (isChromeOnIOS && isOpen) {
+                    onClose();
+                }
+            }, 300);
+        };
+        
+        window.addEventListener('resize', handleResize, { passive: true });
 
         return () => {
             window.removeEventListener('orientationchange', handleOrientationChange);
-            window.removeEventListener('resize', handleOrientationChange);
+            window.removeEventListener('resize', handleResize);
+            clearTimeout(resizeTimeout);
         };
-    }, []);
+    }, [isChromeOnIOS, isOpen, onClose]);
 
     // Cleanup on unmount
     useEffect(() => {
         return () => {
             if (sheetRef.current) {
                 sheetRef.current.style.transform = '';
+                sheetRef.current.style.willChange = 'auto';
             }
         };
     }, []);
 
     const handleTouchStart = useCallback((e: React.TouchEvent | React.MouseEvent) => {
+        // Prevent multiple touches
+        if ('touches' in e && e.touches.length > 1) return;
+        
         const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+        const touchId = 'touches' in e ? e.touches[0].identifier : null;
+        
         dragStartY.current = clientY;
+        touchIdRef.current = touchId;
         setIsDragging(true);
         isDraggingRef.current = true;
+        
+        // Enable will-change only during drag
+        if (sheetRef.current) {
+            sheetRef.current.style.willChange = 'transform';
+        }
     }, []);
 
     const handleTouchMove = useCallback((e: React.TouchEvent | React.MouseEvent) => {
         if (!isDraggingRef.current) return;
         
-        // Prevent default to avoid scroll conflicts
+        // Check if it's the same touch
         if ('touches' in e) {
-            e.preventDefault();
-        }
-        
-        const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
-        const deltaY = clientY - dragStartY.current;
-        
-        if (deltaY > 0) {
-            currentTranslateY.current = deltaY;
-            if (sheetRef.current) {
-                sheetRef.current.style.transform = `translateY(${deltaY}px)`;
+            const touch = Array.from(e.touches).find(t => t.identifier === touchIdRef.current);
+            if (!touch) return;
+            
+            const clientY = touch.clientY;
+            const deltaY = clientY - dragStartY.current;
+            
+            if (deltaY > 0) {
+                currentTranslateY.current = deltaY;
+                if (sheetRef.current) {
+                    sheetRef.current.style.transform = `translateY(${deltaY}px)`;
+                }
+            }
+            
+            // Use passive false for preventDefault
+            if (e.cancelable && deltaY > 0) {
+                e.preventDefault();
+            }
+        } else {
+            const clientY = e.clientY;
+            const deltaY = clientY - dragStartY.current;
+            
+            if (deltaY > 0) {
+                currentTranslateY.current = deltaY;
+                if (sheetRef.current) {
+                    sheetRef.current.style.transform = `translateY(${deltaY}px)`;
+                }
             }
         }
     }, []);
 
     const handleTouchEnd = useCallback(() => {
         isDraggingRef.current = false;
+        touchIdRef.current = null;
         setIsDragging(false);
+        
+        // Disable will-change after drag
+        if (sheetRef.current) {
+            sheetRef.current.style.willChange = 'auto';
+        }
+        
         const threshold = 150; // min swipe distance to close
         
         if (currentTranslateY.current > threshold) {
@@ -132,7 +199,11 @@ export default function ItemDetailSheet({ item, isOpen, onClose }: ItemDetailShe
                 <div 
                     ref={sheetRef}
                     className="h-full flex flex-col overflow-y-auto scrollbar-hide touch-pan-y"
-                    style={{ willChange: isDragging ? 'transform' : 'auto' }}
+                    style={{ 
+                        willChange: 'auto',
+                        // Disable complex animations on Chrome iOS
+                        transform: isChromeOnIOS ? undefined : undefined
+                    }}
                 >
                     {/* Drag Handle - Swipe area */}
                     <div 
