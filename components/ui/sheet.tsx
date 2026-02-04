@@ -63,46 +63,11 @@ export interface SheetContentProps
     showCloseButton?: boolean;
 }
 
-// Detect Chrome on iOS
-const isChromeIOS = () => {
-    if (typeof navigator === 'undefined') return false;
-    return /CriOS/.test(navigator.userAgent);
-};
-
 // Fix for ResizeObserver - wrap in error boundary pattern
 const SheetContent = React.forwardRef<
     React.ElementRef<typeof SheetPrimitive.Content>,
     SheetContentProps
 >(({ side = "right", className, children, showCloseButton = true, ...props }, ref) => {
-    const [isChromeOnIOS] = React.useState(() => isChromeIOS());
-    
-    // Handle orientation change to prevent crashes
-    React.useEffect(() => {
-        let orientationTimeout: NodeJS.Timeout;
-        
-        const handleOrientationChange = () => {
-            // Disable animations during orientation change for Chrome iOS
-            if (isChromeOnIOS) {
-                document.body.style.overflow = 'hidden';
-            }
-            
-            clearTimeout(orientationTimeout);
-            orientationTimeout = setTimeout(() => {
-                if (isChromeOnIOS) {
-                    document.body.style.overflow = '';
-                }
-                window.dispatchEvent(new Event('resize'));
-            }, isChromeOnIOS ? 500 : 100);
-        };
-
-        window.addEventListener('orientationchange', handleOrientationChange, { passive: true });
-        
-        return () => {
-            window.removeEventListener('orientationchange', handleOrientationChange);
-            clearTimeout(orientationTimeout);
-        };
-    }, [isChromeOnIOS]);
-
     return (
         <SheetPortal>
             <SheetOverlay />

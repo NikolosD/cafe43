@@ -88,7 +88,7 @@ export default function MenuList({ menu }: { menu: any[] }) {
                                     e.preventDefault();
                                     handleCategoryClick(category.id);
                                 }}
-                                className="group relative flex h-32 sm:h-44 w-full bg-white rounded-[2rem] sm:rounded-[2.5rem] overflow-hidden shadow-sm border border-black/[0.03] transition-all hover:shadow-md hover:-translate-y-1 active:scale-[0.98]"
+                                className="group relative flex h-32 sm:h-44 w-full bg-white rounded-[2rem] sm:rounded-[2.5rem] overflow-hidden shadow-sm border border-black/[0.03] transition-shadow hover:shadow-md active:scale-[0.98]"
                             >
                                 {/* Content Area */}
                                 <div className="flex-[1.1] flex flex-col justify-center px-6 sm:px-10 text-left z-10 transition-colors">
@@ -115,7 +115,7 @@ export default function MenuList({ menu }: { menu: any[] }) {
                                                 fill
                                                 priority={index < 4}
                                                 sizes="(max-width: 768px) 50vw, 33vw"
-                                                className="object-cover transition-transform duration-1000 group-hover:scale-110"
+                                                className="object-cover"
                                                 loading={index < 4 ? "eager" : "lazy"}
                                             />
                                             {/* Refined Smooth Gradient Fade */}

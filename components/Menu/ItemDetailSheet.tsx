@@ -37,51 +37,22 @@ export default function ItemDetailSheet({ item, isOpen, onClose }: ItemDetailShe
     const isDraggingRef = useRef(false);
     const touchIdRef = useRef<number | null>(null);
 
-    // Fix for orientation change - reset position
+    // Fix for orientation change - close sheet to prevent crashes
     useEffect(() => {
-        let resizeTimeout: NodeJS.Timeout;
-        
         const handleOrientationChange = () => {
-            // Close sheet on orientation change for Chrome iOS to prevent crash
-            if (isChromeOnIOS && isOpen) {
+            // Simply close the sheet on any orientation change
+            // This is the safest approach for mobile browsers
+            if (isOpen) {
                 onClose();
-                return;
             }
-            
-            // For other browsers, reset with delay
-            clearTimeout(resizeTimeout);
-            resizeTimeout = setTimeout(() => {
-                if (sheetRef.current) {
-                    sheetRef.current.style.transform = '';
-                    sheetRef.current.style.transition = '';
-                    sheetRef.current.style.willChange = 'auto';
-                }
-                currentTranslateY.current = 0;
-                setIsDragging(false);
-                isDraggingRef.current = false;
-            }, isChromeOnIOS ? 500 : 100);
         };
 
         window.addEventListener('orientationchange', handleOrientationChange, { passive: true });
-        
-        // Chrome iOS fires resize multiple times
-        const handleResize = () => {
-            clearTimeout(resizeTimeout);
-            resizeTimeout = setTimeout(() => {
-                if (isChromeOnIOS && isOpen) {
-                    onClose();
-                }
-            }, 300);
-        };
-        
-        window.addEventListener('resize', handleResize, { passive: true });
 
         return () => {
             window.removeEventListener('orientationchange', handleOrientationChange);
-            window.removeEventListener('resize', handleResize);
-            clearTimeout(resizeTimeout);
         };
-    }, [isChromeOnIOS, isOpen, onClose]);
+    }, [isOpen, onClose]);
 
     // Cleanup on unmount
     useEffect(() => {

@@ -16,14 +16,13 @@ export default function MenuItem({ item, onClick }: MenuItemProps) {
             onClick={() => onClick?.(item)}
             className={cn(
                 "group relative flex items-start p-4 rounded-2xl transition-all duration-300 text-left w-full overflow-hidden",
-                "bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)]",
-                "border border-transparent hover:border-primary/10",
-                "hover:-translate-y-0.5 active:scale-[0.99]",
+                "bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]",
+                "border border-transparent",
+                "active:scale-[0.99]",
                 !isActive && "opacity-60 grayscale"
             )}
         >
-            {/* Фоновый градиент при наведении */}
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/0 via-transparent to-accent/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
 
             {/* Image */}
             <div className="relative shrink-0 w-20 h-20 rounded-xl overflow-hidden bg-gradient-to-br from-muted to-muted/50 mr-4 shadow-inner">
@@ -43,8 +42,7 @@ export default function MenuItem({ item, onClick }: MenuItemProps) {
                     </div>
                 )}
 
-                {/* Блик на изображении при наведении */}
-                <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
             </div>
 
             {/* Content */}
@@ -71,8 +69,7 @@ export default function MenuItem({ item, onClick }: MenuItemProps) {
                 )}
             </div>
 
-            {/* Декоративный акцент */}
-            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-primary/0 via-primary/30 to-accent/0 scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left" />
+
         </button>
     );
 }
