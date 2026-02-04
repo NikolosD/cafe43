@@ -5,6 +5,7 @@ import {
     SheetContent,
 } from "@/components/ui/sheet";
 import { X, Flame, Leaf, Sparkles, Scale } from "lucide-react";
+import Icon from '@/components/Icon';
 import { Item } from "@/lib/db";
 import { cn } from "@/lib/utils";
 import { useTranslations } from 'next-intl';
@@ -163,7 +164,7 @@ export default function ItemDetailSheet({ item, isOpen, onClose }: ItemDetailShe
                             />
                         ) : (
                             <div className="w-full h-full flex items-center justify-center text-muted-foreground/30">
-                                <Sparkles className="w-16 h-16" />
+                                <Icon icon={Sparkles} size={64} />
                             </div>
                         )}
 
@@ -175,14 +176,14 @@ export default function ItemDetailSheet({ item, isOpen, onClose }: ItemDetailShe
                             onClick={onClose}
                             className="absolute top-10 right-5 p-2.5 bg-white/90 backdrop-blur-md text-foreground rounded-full hover:bg-white transition-all duration-300 z-50 shadow-lg hover:shadow-xl hover:scale-105 active:scale-95"
                         >
-                            <X className="w-5 h-5" />
+                            <Icon icon={X} size={20} />
                         </button>
 
                         {/* Top Badges */}
                         <div className="absolute top-10 left-5 flex flex-wrap gap-2">
                             {item.is_new && (
                                 <div className="px-3 py-1.5 bg-gradient-to-r from-yellow-400 to-orange-400 text-white text-[10px] font-bold uppercase tracking-wider rounded-full flex items-center gap-1.5 shadow-lg">
-                                    <Sparkles className="w-3.5 h-3.5" /> {ta('new')}
+                                    <Icon icon={Sparkles} size={14} /> {ta('new')}
                                 </div>
                             )}
                         </div>
@@ -200,7 +201,7 @@ export default function ItemDetailSheet({ item, isOpen, onClose }: ItemDetailShe
                                     <div className="flex items-center gap-3 flex-wrap">
                                         {item.weight && (
                                             <div className="flex items-center gap-1.5 text-muted-foreground text-sm font-medium bg-muted/50 px-2.5 py-1 rounded-lg">
-                                                <Scale className="w-4 h-4 text-primary" />
+                                                <Icon icon={Scale} size={16} className="text-primary" />
                                                 {item.weight}
                                             </div>
                                         )}
@@ -215,13 +216,13 @@ export default function ItemDetailSheet({ item, isOpen, onClose }: ItemDetailShe
                             <div className="flex gap-3">
                                 {item.is_spicy && (
                                     <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-red-50 text-red-500 text-sm font-medium">
-                                        <Flame className="w-4 h-4 fill-red-500" />
+                                        <Icon icon={Flame} size={16} className="fill-red-500" />
                                         Spicy
                                     </div>
                                 )}
                                 {item.is_vegan && (
                                     <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-500 text-sm font-medium">
-                                        <Leaf className="w-4 h-4 fill-emerald-500" />
+                                        <Icon icon={Leaf} size={16} className="fill-emerald-500" />
                                         Vegan
                                     </div>
                                 )}

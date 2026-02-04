@@ -36,12 +36,6 @@ export default function MenuHeader({ restaurantName = "Cafe 43" }: MenuHeaderPro
                 </Link>
                 
                 <div className="flex items-center gap-2">
-                    {/* Decorative dots */}
-                    <div className="hidden sm:flex items-center gap-1 mr-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-primary/40 animate-pulse" style={{ animationDelay: '0ms' }} />
-                        <div className="w-1.5 h-1.5 rounded-full bg-accent/40 animate-pulse" style={{ animationDelay: '200ms' }} />
-                        <div className="w-1.5 h-1.5 rounded-full bg-primary/40 animate-pulse" style={{ animationDelay: '400ms' }} />
-                    </div>
                     <LanguageSwitcher />
                 </div>
             </div>

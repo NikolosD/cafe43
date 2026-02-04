@@ -3,6 +3,7 @@
 import { Item } from '@/lib/db';
 import MenuItem from './MenuItem';
 import { UtensilsCrossed } from 'lucide-react';
+import Icon from '@/components/Icon';
 import { Virtuoso } from 'react-virtuoso';
 
 interface CategorySectionProps {
@@ -19,8 +20,8 @@ export default function CategorySection({ id, title, items, onSelectItem }: Cate
         <section id={id} className="scroll-mt-24 py-2">
             {title && (
                 <div className="flex items-center gap-3 mb-6 px-1">
-                    <div className="p-2 rounded-xl bg-primary/10 text-primary">
-                        <UtensilsCrossed className="w-4 h-4" />
+                    <div className="p-2 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                        <Icon icon={UtensilsCrossed} size={16} />
                     </div>
                     <h2 className="text-xl font-bold text-foreground/90 tracking-tight font-display">
                         {title}

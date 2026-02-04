@@ -274,6 +274,21 @@
     display: none;
   }
 
+  /* iOS Safari SVG Icon Fix */
+  svg {
+    display: inline-block;
+    vertical-align: middle;
+    flex-shrink: 0;
+  }
+  
+  /* Ensure icons don't get clipped on iOS */
+  .lucide {
+    display: block;
+    flex-shrink: 0;
+    width: auto;
+    height: auto;
+  }
+
   /* Сглаживание */
   .antialiased {
     -webkit-font-smoothing: antialiased;

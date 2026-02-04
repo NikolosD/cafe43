@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import { cn } from "@/lib/utils";
 import { Sparkles } from 'lucide-react';
+import Icon from '@/components/Icon';
 
 interface MenuItemProps {
     item: any;
@@ -38,7 +39,7 @@ export default function MenuItem({ item, onClick }: MenuItemProps) {
                     />
                 ) : (
                     <div className="w-full h-full flex items-center justify-center text-muted-foreground/30">
-                        <Sparkles className="w-6 h-6" />
+                        <Icon icon={Sparkles} size={24} />
                     </div>
                 )}
 

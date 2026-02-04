@@ -6,6 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Globe, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import Icon from '@/components/Icon';
 
 const languages = [
     { code: 'ge', label: 'ქართული', flag: '🇬🇪' },
@@ -40,8 +41,8 @@ export default function LanguageSwitcher() {
                 )}
             >
                 <div className="flex items-center gap-2">
-                    <div className="p-1 rounded-full bg-gradient-to-br from-primary/20 to-accent/20">
-                        <Globe className="w-3.5 h-3.5 text-primary" />
+                    <div className="p-1 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
+                        <Icon icon={Globe} size={14} className="text-primary" />
                     </div>
                     <span className="hidden sm:inline">{currentLang?.label}</span>
                     <span className="sm:hidden">{currentLang?.flag}</span>
@@ -67,7 +68,7 @@ export default function LanguageSwitcher() {
                                 <span className="font-medium">{lang.label}</span>
                             </div>
                             {locale === lang.code && (
-                                <Check className="w-4 h-4 text-primary" />
+                                <Icon icon={Check} size={16} className="text-primary" />
                             )}
                         </div>
                     </SelectItem>
