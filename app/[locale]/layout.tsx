@@ -23,12 +23,20 @@ export const viewport: Viewport = {
     viewportFit: 'cover',
 };
 
-// Script to detect Chrome iOS and add class to html
+// Script to detect Chrome iOS and add class to html + handle orientation
 const chromeIOSScript = `
 (function() {
     var isChromeIOS = /CriOS/.test(navigator.userAgent) && /iPhone|iPad|iPod/.test(navigator.userAgent);
     if (isChromeIOS) {
         document.documentElement.classList.add('chrome-ios');
+        // Force reflow after orientation change
+        window.addEventListener('orientationchange', function() {
+            setTimeout(function() {
+                document.body.style.display = 'none';
+                void document.body.offsetHeight;
+                document.body.style.display = '';
+            }, 100);
+        });
     }
 })();
 `;

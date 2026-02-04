@@ -414,12 +414,18 @@
     }
   }
   
-  /* Chrome iOS - fix header blur causing issues */
-  .chrome-ios header .backdrop-blur-xl,
-  .chrome-ios header [class*="backdrop-blur"] {
+  /* Chrome iOS - fix ALL blur effects causing issues */
+  .chrome-ios [class*="backdrop-blur"],
+  .chrome-ios [style*="backdrop-filter"] {
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
-    background: rgba(255, 255, 255, 0.98) !important;
+  }
+  
+  .chrome-ios header,
+  .chrome-ios [role="dialog"],
+  .chrome-ios [data-state="open"] {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
   }
 
   /* Сглаживание */

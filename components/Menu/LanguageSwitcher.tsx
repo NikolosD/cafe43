@@ -34,10 +34,10 @@ export default function LanguageSwitcher() {
         <Select value={locale} onValueChange={handleChange}>
             <SelectTrigger 
                 className={cn(
-                    "w-auto min-w-[120px] bg-white/50 backdrop-blur-sm border border-black/5",
-                    "hover:bg-white/80 hover:border-primary/20 hover:shadow-md",
+                    "w-auto min-w-[120px] bg-white border border-black/5",
+                    "hover:bg-white hover:border-primary/20 hover:shadow-md",
                     "focus:ring-2 focus:ring-primary/20",
-                    "rounded-full transition-all duration-300 h-10 px-4 gap-2 text-sm font-medium"
+                    "rounded-full transition-all duration-200 h-10 px-4 gap-2 text-sm font-medium"
                 )}
             >
                 <div className="flex items-center gap-2">
@@ -50,7 +50,7 @@ export default function LanguageSwitcher() {
             </SelectTrigger>
             <SelectContent 
                 align="end" 
-                className="rounded-2xl border-black/5 shadow-xl min-w-[160px] p-2 bg-white/95 backdrop-blur-xl"
+                className="rounded-2xl border-black/5 shadow-xl min-w-[160px] p-2 bg-white"
             >
                 {languages.map((lang) => (
                     <SelectItem 
