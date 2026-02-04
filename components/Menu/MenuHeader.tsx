@@ -8,12 +8,12 @@ interface MenuHeaderProps {
 
 export default function MenuHeader({ restaurantName = "Cafe 43" }: MenuHeaderProps) {
     return (
-        <header className="sticky top-0 z-50 w-full">
-            {/* Glassmorphism background */}
-            <div className="absolute inset-0 bg-white/75 backdrop-blur-xl border-b border-black/5" />
+        <header className="sticky top-0 z-50 w-full chrome-ios-header">
+            {/* Glassmorphism background - simplified for Chrome iOS */}
+            <div className="absolute inset-0 bg-white/95 border-b border-black/5" />
             
-            {/* Gradient overlay */}
-            <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-accent/5" />
+            {/* Gradient overlay - disabled on mobile */}
+            <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-accent/5 hidden sm:block" />
             
             <div className="container max-w-3xl mx-auto flex h-14 sm:h-16 items-center justify-between px-4 relative">
                 <Link href="/" className="relative z-10 group">

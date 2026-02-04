@@ -10,7 +10,7 @@ export default function LanguageSplashPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-white via-red-50/50 to-red-100 flex flex-col items-center justify-center p-6 text-black relative overflow-hidden">
+        <div className="min-h-screen bg-gradient-to-b from-white via-red-50/50 to-red-100 flex flex-col items-center justify-center p-6 pb-24 text-black relative overflow-hidden" style={{ minHeight: '100dvh' }}>
             <div className="max-w-md w-full space-y-12 relative z-10">
                 <div className="text-center space-y-4">
                     <h1

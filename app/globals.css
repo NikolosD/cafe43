@@ -387,15 +387,39 @@
     }
   }
 
-  /* Fix for iOS Safari/Chrome 100vh issue */
+  /* Fix for iOS Safari/Chrome 100vh issue - use dvh instead */
+  .min-h-screen {
+    min-height: 100vh;
+    min-height: 100dvh;
+    min-height: -webkit-fill-available;
+  }
+  
+  .h-screen {
+    height: 100vh;
+    height: 100dvh;
+    height: -webkit-fill-available;
+  }
+  
+  /* Fix for Chrome iOS bottom white bar */
   @supports (-webkit-touch-callout: none) {
-    .min-h-screen {
+    body {
+      min-height: 100vh;
       min-height: -webkit-fill-available;
     }
     
-    .h-screen {
-      height: -webkit-fill-available;
+    /* Add safe area padding for bottom */
+    .pb-safe {
+      padding-bottom: env(safe-area-inset-bottom, 20px);
+      padding-bottom: constant(safe-area-inset-bottom);
     }
+  }
+  
+  /* Chrome iOS - fix header blur causing issues */
+  .chrome-ios header .backdrop-blur-xl,
+  .chrome-ios header [class*="backdrop-blur"] {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: rgba(255, 255, 255, 0.98) !important;
   }
 
   /* Сглаживание */
