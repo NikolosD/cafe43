@@ -10,6 +10,9 @@ import ErrorBoundary from '@/components/ErrorBoundary';
 // ISR - кэширование страницы
 export const revalidate = 60;
 
+// Chrome iOS detection class for server-side
+const chromeIOSClass = 'data-chrome-ios';
+
 export default async function MenuPage({
     params: { locale },
     searchParams

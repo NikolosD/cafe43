@@ -5,6 +5,7 @@ import { Inter } from "next/font/google";
 import "@/app/globals.css";
 import LocaleInitializer from '@/components/LocaleInitializer';
 import ResizeObserverFix from '@/components/ResizeObserverFix';
+import Script from 'next/script';
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -22,6 +23,16 @@ export const viewport: Viewport = {
     viewportFit: 'cover',
 };
 
+// Script to detect Chrome iOS and add class to html
+const chromeIOSScript = `
+(function() {
+    var isChromeIOS = /CriOS/.test(navigator.userAgent) && /iPhone|iPad|iPod/.test(navigator.userAgent);
+    if (isChromeIOS) {
+        document.documentElement.classList.add('chrome-ios');
+    }
+})();
+`;
+
 export default async function RootLayout({
     children,
     params: { locale }
@@ -33,6 +44,11 @@ export default async function RootLayout({
 
     return (
         <html lang={locale}>
+            <head>
+                <Script id="chrome-ios-detect" strategy="beforeInteractive">
+                    {chromeIOSScript}
+                </Script>
+            </head>
             <body className={inter.className}>
                 <ResizeObserverFix />
                 <NextIntlClientProvider locale={locale} messages={messages}>

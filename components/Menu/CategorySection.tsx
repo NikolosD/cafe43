@@ -5,6 +5,7 @@ import MenuItem from './MenuItem';
 import { UtensilsCrossed } from 'lucide-react';
 import Icon from '@/components/Icon';
 import { Virtuoso } from 'react-virtuoso';
+import { useChromeIOS, useChromeIOSOrientationFix } from '@/lib/useChromeIOS';
 
 interface CategorySectionProps {
     id: string;
@@ -14,7 +15,40 @@ interface CategorySectionProps {
 }
 
 export default function CategorySection({ id, title, items, onSelectItem }: CategorySectionProps) {
+    const { isChromeOnIOS, mounted } = useChromeIOS();
+    
+    // Apply Chrome iOS orientation fix
+    useChromeIOSOrientationFix();
+    
     if (items.length === 0) return null;
+
+    // For Chrome iOS: disable Virtuoso to prevent crashes, use simple list instead
+    if (isChromeOnIOS || !mounted) {
+        return (
+            <section id={id} className="scroll-mt-24 py-2">
+                {title && (
+                    <div className="flex items-center gap-3 mb-6 px-1">
+                        <div className="p-2 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                            <Icon icon={UtensilsCrossed} size={16} />
+                        </div>
+                        <h2 className="text-xl font-bold text-foreground/90 tracking-tight font-display">
+                            {title}
+                        </h2>
+                        <div className="flex-1 h-px bg-gradient-to-r from-border to-transparent ml-2" />
+                    </div>
+                )}
+                <div className="space-y-3">
+                    {items.map((item) => (
+                        <MenuItem
+                            key={item.id}
+                            item={item}
+                            onClick={onSelectItem}
+                        />
+                    ))}
+                </div>
+            </section>
+        );
+    }
 
     return (
         <section id={id} className="scroll-mt-24 py-2">

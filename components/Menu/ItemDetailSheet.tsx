@@ -7,10 +7,9 @@ import {
 import { X, Flame, Leaf, Sparkles, Scale } from "lucide-react";
 import Icon from '@/components/Icon';
 import { Item } from "@/lib/db";
-import { cn } from "@/lib/utils";
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
-import { useRef, useState, useCallback, useEffect } from 'react';
+import { useEffect } from 'react';
 
 interface ItemDetailSheetProps {
     item: Item | null;
@@ -18,30 +17,13 @@ interface ItemDetailSheetProps {
     onClose: () => void;
 }
 
-// Detect Chrome on iOS
-const isChromeIOS = () => {
-    if (typeof navigator === 'undefined') return false;
-    return /CriOS/.test(navigator.userAgent);
-};
-
 export default function ItemDetailSheet({ item, isOpen, onClose }: ItemDetailSheetProps) {
     const t = useTranslations('Menu');
     const ta = useTranslations('Admin');
-    const [isChromeOnIOS] = useState(() => isChromeIOS());
-    
-    // Swipe handling
-    const sheetRef = useRef<HTMLDivElement>(null);
-    const [isDragging, setIsDragging] = useState(false);
-    const dragStartY = useRef(0);
-    const currentTranslateY = useRef(0);
-    const isDraggingRef = useRef(false);
-    const touchIdRef = useRef<number | null>(null);
 
     // Fix for orientation change - close sheet to prevent crashes
     useEffect(() => {
         const handleOrientationChange = () => {
-            // Simply close the sheet on any orientation change
-            // This is the safest approach for mobile browsers
             if (isOpen) {
                 onClose();
             }
@@ -53,106 +35,6 @@ export default function ItemDetailSheet({ item, isOpen, onClose }: ItemDetailShe
             window.removeEventListener('orientationchange', handleOrientationChange);
         };
     }, [isOpen, onClose]);
-
-    // Cleanup on unmount
-    useEffect(() => {
-        return () => {
-            if (sheetRef.current) {
-                sheetRef.current.style.transform = '';
-                sheetRef.current.style.willChange = 'auto';
-            }
-        };
-    }, []);
-
-    const handleTouchStart = useCallback((e: React.TouchEvent | React.MouseEvent) => {
-        // Prevent multiple touches
-        if ('touches' in e && e.touches.length > 1) return;
-        
-        const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
-        const touchId = 'touches' in e ? e.touches[0].identifier : null;
-        
-        dragStartY.current = clientY;
-        touchIdRef.current = touchId;
-        setIsDragging(true);
-        isDraggingRef.current = true;
-        
-        // Enable will-change only during drag
-        if (sheetRef.current) {
-            sheetRef.current.style.willChange = 'transform';
-        }
-    }, []);
-
-    const handleTouchMove = useCallback((e: React.TouchEvent | React.MouseEvent) => {
-        if (!isDraggingRef.current) return;
-        
-        // Check if it's the same touch
-        if ('touches' in e) {
-            const touch = Array.from(e.touches).find(t => t.identifier === touchIdRef.current);
-            if (!touch) return;
-            
-            const clientY = touch.clientY;
-            const deltaY = clientY - dragStartY.current;
-            
-            if (deltaY > 0) {
-                currentTranslateY.current = deltaY;
-                if (sheetRef.current) {
-                    sheetRef.current.style.transform = `translateY(${deltaY}px)`;
-                }
-            }
-            
-            // Use passive false for preventDefault
-            if (e.cancelable && deltaY > 0) {
-                e.preventDefault();
-            }
-        } else {
-            const clientY = e.clientY;
-            const deltaY = clientY - dragStartY.current;
-            
-            if (deltaY > 0) {
-                currentTranslateY.current = deltaY;
-                if (sheetRef.current) {
-                    sheetRef.current.style.transform = `translateY(${deltaY}px)`;
-                }
-            }
-        }
-    }, []);
-
-    const handleTouchEnd = useCallback(() => {
-        isDraggingRef.current = false;
-        touchIdRef.current = null;
-        setIsDragging(false);
-        
-        // Disable will-change after drag
-        if (sheetRef.current) {
-            sheetRef.current.style.willChange = 'auto';
-        }
-        
-        const threshold = 150; // min swipe distance to close
-        
-        if (currentTranslateY.current > threshold) {
-            onClose();
-        } else {
-            // Reset position
-            if (sheetRef.current) {
-                sheetRef.current.style.transform = '';
-                sheetRef.current.style.transition = 'transform 0.3s ease-out';
-                setTimeout(() => {
-                    if (sheetRef.current) {
-                        sheetRef.current.style.transition = '';
-                    }
-                }, 300);
-            }
-        }
-        currentTranslateY.current = 0;
-    }, [onClose]);
-
-    // Reset transform when sheet opens
-    useEffect(() => {
-        if (isOpen && sheetRef.current) {
-            sheetRef.current.style.transform = '';
-            currentTranslateY.current = 0;
-        }
-    }, [isOpen]);
     
     if (!item) return null;
 
@@ -163,34 +45,17 @@ export default function ItemDetailSheet({ item, isOpen, onClose }: ItemDetailShe
                 showCloseButton={false}
                 className="h-[88dvh] sm:h-[85vh] sm:max-w-xl sm:left-1/2 sm:-translate-x-1/2 p-0 overflow-hidden rounded-t-[32px] border-none bg-white focus-visible:ring-0 shadow-2xl"
                 style={{ 
-                    // Prevent layout shift on orientation change
                     maxHeight: 'calc(100dvh - 40px)'
                 }}
             >
                 <div 
-                    ref={sheetRef}
-                    className="h-full flex flex-col overflow-y-auto scrollbar-hide touch-pan-y"
-                    style={{ 
-                        willChange: 'auto',
-                        // Disable complex animations on Chrome iOS
-                        transform: isChromeOnIOS ? undefined : undefined
-                    }}
+                    className="h-full flex flex-col overflow-y-auto scrollbar-hide"
                 >
-                    {/* Drag Handle - Swipe area */}
+                    {/* Drag Handle - disabled for Chrome iOS */}
                     <div 
-                        className="absolute top-0 left-0 right-0 h-12 z-50 flex items-center justify-center cursor-grab active:cursor-grabbing"
-                        onTouchStart={handleTouchStart}
-                        onTouchMove={handleTouchMove}
-                        onTouchEnd={handleTouchEnd}
-                        onMouseDown={handleTouchStart}
-                        onMouseMove={handleTouchMove}
-                        onMouseUp={handleTouchEnd}
-                        onMouseLeave={handleTouchEnd}
+                        className="absolute top-0 left-0 right-0 h-12 z-50 flex items-center justify-center"
                     >
-                        <div className={cn(
-                            "w-10 h-1.5 bg-zinc-300 rounded-full transition-all",
-                            isDragging && "w-12 bg-zinc-400"
-                        )} />
+                        <div className="w-10 h-1.5 bg-zinc-300 rounded-full" />
                     </div>
 
                     {/* Hero Image */}
@@ -213,10 +78,14 @@ export default function ItemDetailSheet({ item, isOpen, onClose }: ItemDetailShe
                         {/* Gradient overlay at bottom */}
                         <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-white via-white/30 to-transparent" />
 
-                        {/* Custom Close Button */}
+                        {/* Custom Close Button - simplified for Chrome iOS */}
                         <button
                             onClick={onClose}
-                            className="absolute top-10 right-5 p-2.5 bg-white/90 backdrop-blur-md text-foreground rounded-full hover:bg-white transition-all duration-300 z-50 shadow-lg hover:shadow-xl hover:scale-105 active:scale-95"
+                            className="absolute top-10 right-5 p-2.5 bg-white text-foreground rounded-full z-50 shadow-lg active:scale-95"
+                            style={{ 
+                                boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                                WebkitTapHighlightColor: 'transparent'
+                            }}
                         >
                             <Icon icon={X} size={20} />
                         </button>
@@ -249,7 +118,10 @@ export default function ItemDetailSheet({ item, isOpen, onClose }: ItemDetailShe
                                         )}
                                     </div>
                                 </div>
-                                <div className="text-2xl font-bold text-white whitespace-nowrap bg-gradient-to-br from-primary to-accent px-5 py-2.5 rounded-2xl shadow-lg shadow-primary/20">
+                                <div 
+                                    className="text-2xl font-bold text-white whitespace-nowrap px-5 py-2.5 rounded-2xl"
+                                    style={{ backgroundColor: 'hsl(15 75% 55%)' }}
+                                >
                                     {item.price} ₾
                                 </div>
                             </div>
