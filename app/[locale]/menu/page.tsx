@@ -30,7 +30,7 @@ export default async function MenuPage({
 
     return (
         <ErrorBoundary>
-            <div className="min-h-screen bg-[#faf9f7] flex flex-col relative" style={{ minHeight: '100dvh' }}>
+            <div className="min-h-screen bg-[#faf9f7] flex flex-col relative">
                 <div className="fixed inset-0 pointer-events-none">
                     {/* Optimized Mobile Background */}
                     <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.02] via-transparent to-accent/[0.02]" />
