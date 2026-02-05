@@ -20,16 +20,22 @@ export const useChromeIOS = () => {
     return { isChromeOnIOS, mounted };
 };
 
+let orientationFixInitialized = false;
+
 // Force style recalculation on orientation change for Chrome iOS
 export const useChromeIOSOrientationFix = () => {
     useEffect(() => {
-        if (!isChromeIOS()) return;
+        if (!isChromeIOS() || orientationFixInitialized) return;
 
-        let timeoutId: NodeJS.Timeout;
+        orientationFixInitialized = true;
+
+        let timeoutId: ReturnType<typeof setTimeout> | null = null;
         
         const handleOrientationChange = () => {
             // Force redraw after orientation change
-            clearTimeout(timeoutId);
+            if (timeoutId) {
+                clearTimeout(timeoutId);
+            }
             timeoutId = setTimeout(() => {
                 // Trigger style recalculation
                 document.body.style.display = 'none';
@@ -42,7 +48,10 @@ export const useChromeIOSOrientationFix = () => {
         
         return () => {
             window.removeEventListener('orientationchange', handleOrientationChange);
-            clearTimeout(timeoutId);
+            if (timeoutId) {
+                clearTimeout(timeoutId);
+            }
+            orientationFixInitialized = false;
         };
     }, []);
 };

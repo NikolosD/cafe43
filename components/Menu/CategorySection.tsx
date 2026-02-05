@@ -5,7 +5,7 @@ import MenuItem from './MenuItem';
 import { UtensilsCrossed } from 'lucide-react';
 import Icon from '@/components/Icon';
 import { Virtuoso } from 'react-virtuoso';
-import { useChromeIOS, useChromeIOSOrientationFix } from '@/lib/useChromeIOS';
+import { useChromeIOS } from '@/lib/useChromeIOS';
 
 interface CategorySectionProps {
     id: string;
@@ -16,9 +16,6 @@ interface CategorySectionProps {
 
 export default function CategorySection({ id, title, items, onSelectItem }: CategorySectionProps) {
     const { isChromeOnIOS, mounted } = useChromeIOS();
-    
-    // Apply Chrome iOS orientation fix
-    useChromeIOSOrientationFix();
     
     if (items.length === 0) return null;
 

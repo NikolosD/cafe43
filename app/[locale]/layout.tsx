@@ -5,6 +5,7 @@ import { Inter } from "next/font/google";
 import "@/app/globals.css";
 import LocaleInitializer from '@/components/LocaleInitializer';
 import ResizeObserverFix from '@/components/ResizeObserverFix';
+import ChromeIOSOrientationFix from '@/components/ChromeIOSOrientationFix';
 import Script from 'next/script';
 
 const inter = Inter({ subsets: ["latin"] });
@@ -23,20 +24,12 @@ export const viewport: Viewport = {
     viewportFit: 'cover',
 };
 
-// Script to detect Chrome iOS and add class to html + handle orientation
+// Script to detect Chrome iOS early and add class to html
 const chromeIOSScript = `
 (function() {
     var isChromeIOS = /CriOS/.test(navigator.userAgent) && /iPhone|iPad|iPod/.test(navigator.userAgent);
     if (isChromeIOS) {
         document.documentElement.classList.add('chrome-ios');
-        // Force reflow after orientation change
-        window.addEventListener('orientationchange', function() {
-            setTimeout(function() {
-                document.body.style.display = 'none';
-                void document.body.offsetHeight;
-                document.body.style.display = '';
-            }, 100);
-        });
     }
 })();
 `;
@@ -59,6 +52,7 @@ export default async function RootLayout({
             </head>
             <body className={inter.className}>
                 <ResizeObserverFix />
+                <ChromeIOSOrientationFix />
                 <NextIntlClientProvider locale={locale} messages={messages}>
                     <LocaleInitializer />
                     {children}
