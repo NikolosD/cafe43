@@ -37,6 +37,8 @@ import { Trash2, Pencil, Plus, Layers, Search, Filter, ArrowUpDown, Upload, Imag
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
+import Icon from '@/components/Icon';
+import { CATEGORY_ICON_OPTIONS } from '@/lib/categoryIcons';
 import {
     DndContext,
     closestCenter,
@@ -127,6 +129,7 @@ export default function CategoryTable({ initialCategories }: CategoryTableProps)
     // Form State
     const [currentId, setCurrentId] = useState<string | null>(null);
     const [sort, setSort] = useState(10);
+    const [icon, setIcon] = useState<string | null>(null);
     const [isActive, setIsActive] = useState(true);
     const [titles, setTitles] = useState({ ru: '', en: '', ge: '' });
     const [originalTitles, setOriginalTitles] = useState({ ru: '', en: '', ge: '' });
@@ -181,6 +184,7 @@ export default function CategoryTable({ initialCategories }: CategoryTableProps)
             setDirtyFields(new Set());
             setImageUrl(category.image_url || null);
             setOriginalImageUrl(category.image_url || null);
+            setIcon(category.icon || null);
         } else {
             setCurrentId(null);
             setSort(categories.length * 10 + 10);
@@ -190,6 +194,7 @@ export default function CategoryTable({ initialCategories }: CategoryTableProps)
             setDirtyFields(new Set());
             setImageUrl(null);
             setOriginalImageUrl(null);
+            setIcon(null);
         }
         setIsOpen(true);
     };
@@ -338,7 +343,8 @@ export default function CategoryTable({ initialCategories }: CategoryTableProps)
                 id: currentId || undefined,
                 sort,
                 is_active: isActive,
-                image_url: imageUrl
+                image_url: imageUrl,
+                icon: icon || null
             };
 
             const translations = [
@@ -572,14 +578,26 @@ export default function CategoryTable({ initialCategories }: CategoryTableProps)
                         <div className="space-y-6">
                             <div className="space-y-4">
                                 <div className="grid gap-2">
-                                    <Label className="text-sm font-semibold">{t('sort_order')}</Label>
-                                    <Input
-                                        type="number"
-                                        value={sort}
-                                        onChange={(e) => setSort(Number(e.target.value))}
-                                        className="max-w-[120px] bg-white h-11 text-lg font-medium"
-                                    />
-                                    <p className="text-[10px] text-zinc-400 font-medium uppercase tracking-wider">{t('lower_first')}</p>
+                                    <Label className="text-sm font-semibold">{t('category_icon')}</Label>
+                                    <Select
+                                        value={icon ?? 'auto'}
+                                        onValueChange={(value) => setIcon(value === 'auto' ? null : value)}
+                                    >
+                                        <SelectTrigger className="bg-white">
+                                            <SelectValue placeholder={t('category_icon')} />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="auto">{t('icon_auto')}</SelectItem>
+                                            {CATEGORY_ICON_OPTIONS.map(option => (
+                                                <SelectItem key={option.key} value={option.key}>
+                                                    <span className="inline-flex items-center gap-2">
+                                                        <Icon icon={option.icon} size={16} />
+                                                        {option.label}
+                                                    </span>
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
                                 </div>
                                 <div className="flex items-center justify-between p-4 bg-zinc-50 rounded-xl border border-zinc-100">
                                     <div className="space-y-0.5">

@@ -405,12 +405,18 @@ export default function ItemTable({ initialItems, categories }: ItemTableProps) 
             setTitles(newTitles);
             setDescriptions(newDescriptions);
 
+            const resolvedSort = currentId
+                ? sort
+                : items
+                    .filter(i => i.category_id === categoryId)
+                    .reduce((max, i) => Math.max(max, i.sort ?? 0), 0) + 10;
+
             const itemData = {
                 id: currentId || undefined,
                 category_id: categoryId,
                 price,
                 image_url: imageUrl,
-                sort,
+                sort: resolvedSort,
                 is_active: isActive,
                 weight: weight || null,
                 is_new: isNew,
@@ -720,10 +726,13 @@ export default function ItemTable({ initialItems, categories }: ItemTableProps) 
                                 </div>
                                 <div className="space-y-2">
                                     <Label>{t('pricing_sort')}</Label>
-                                    <div className="grid grid-cols-2 gap-2">
-                                        <Input type="number" className="bg-white" value={price} onChange={e => setPrice(Number(e.target.value))} placeholder="Price" />
-                                        <Input type="number" className="bg-white" value={sort} onChange={e => setSort(Number(e.target.value))} placeholder="Sort" />
-                                    </div>
+                                    <Input
+                                        type="number"
+                                        className="bg-white"
+                                        value={price}
+                                        onChange={e => setPrice(Number(e.target.value))}
+                                        placeholder="Price"
+                                    />
                                 </div>
                                 <div className="space-y-3 pt-2">
                                     <Label className="text-xs uppercase text-zinc-400 font-bold">{t('badges')}</Label>
@@ -836,7 +845,5 @@ export default function ItemTable({ initialItems, categories }: ItemTableProps) 
         </div>
     );
 }
-
-
 
 

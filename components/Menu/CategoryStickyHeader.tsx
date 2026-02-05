@@ -2,29 +2,16 @@
 
 import { Link } from '@/lib/navigation';
 import { useLocale } from 'next-intl';
-import { CakeSlice, Coffee, GlassWater, Sparkles } from 'lucide-react';
 import { useCallback } from 'react';
 import Icon from '@/components/Icon';
+import { getCategoryIcon } from '@/lib/categoryIcons';
 
 interface CategoryStickyHeaderProps {
     categoryTitle: string;
+    icon?: string | null;
 }
 
-function getCategoryIcon(title: string) {
-    const lowerTitle = title.toLowerCase();
-    if (lowerTitle.includes('des') || lowerTitle.includes('дес') || lowerTitle.includes('დეს')) {
-        return <Icon icon={CakeSlice} size={28} strokeWidth={1.5} />;
-    }
-    if (lowerTitle.includes('hot') || lowerTitle.includes('горяч') || lowerTitle.includes('ცხელ')) {
-        return <Icon icon={Coffee} size={28} strokeWidth={1.5} />;
-    }
-    if (lowerTitle.includes('cold') || lowerTitle.includes('холод') || lowerTitle.includes('ცივი')) {
-        return <Icon icon={GlassWater} size={28} strokeWidth={1.5} />;
-    }
-    return <Icon icon={Sparkles} size={28} strokeWidth={1.5} />;
-}
-
-export default function CategoryStickyHeader({ categoryTitle }: CategoryStickyHeaderProps) {
+export default function CategoryStickyHeader({ categoryTitle, icon }: CategoryStickyHeaderProps) {
     const locale = useLocale();
 
     const handleBackClick = useCallback((e: React.MouseEvent) => {
@@ -60,7 +47,7 @@ export default function CategoryStickyHeader({ categoryTitle }: CategoryStickyHe
                     </Link>
                     <div className="flex items-center gap-3">
                         <div className="p-2.5 rounded-xl bg-gradient-to-br from-primary/10 via-primary/5 to-accent/10 text-primary shadow-sm border border-primary/10 flex items-center justify-center">
-                            {getCategoryIcon(categoryTitle)}
+                            <Icon icon={getCategoryIcon(categoryTitle, icon)} size={28} strokeWidth={1.5} />
                         </div>
                         <h2 className="text-xl font-bold tracking-tight text-foreground/90 font-display">
                             {categoryTitle}

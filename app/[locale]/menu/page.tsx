@@ -44,7 +44,7 @@ export default async function MenuPage({
                 <MenuHeader />
 
                 {activeCategory && (
-                    <CategoryStickyHeader categoryTitle={activeCategory.title} />
+                    <CategoryStickyHeader categoryTitle={activeCategory.title} icon={activeCategory.icon} />
                 )}
 
                 <main className="flex-grow">
