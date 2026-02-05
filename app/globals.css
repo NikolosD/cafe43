@@ -335,19 +335,20 @@
     will-change: auto !important;
   }
 
-  /* Stabilize viewport height on Chrome iOS */
-  .chrome-ios {
-    --app-height: 100vh;
+  /* Chrome iOS: use simpler layout */
+  .chrome-ios .menu-bg {
+    display: none !important;
   }
 
-  .chrome-ios .min-h-screen {
-    min-height: var(--app-height);
+  .chrome-ios .chrome-ios-header,
+  .chrome-ios .chrome-ios-sticky {
+    position: static !important;
+    top: auto !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
   }
-  
-  .chrome-ios .h-screen {
-    height: var(--app-height);
-  }
-  
+
   /* Regular iOS fixes */
   @supports (-webkit-touch-callout: none) {
     .backdrop-blur-xl {

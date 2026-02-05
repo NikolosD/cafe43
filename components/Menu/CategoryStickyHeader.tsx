@@ -33,7 +33,7 @@ export default function CategoryStickyHeader({ categoryTitle }: CategoryStickyHe
     }, []);
 
     return (
-        <div className="sticky top-14 sm:top-16 z-40 w-full bg-white/90 backdrop-blur-xl border-b border-black/10 shadow-sm">
+        <div className="sticky top-14 sm:top-16 z-40 w-full bg-white/90 backdrop-blur-xl border-b border-black/10 shadow-sm chrome-ios-sticky">
             <div className="max-w-3xl mx-auto px-4 py-3">
                 <div className="flex items-center gap-3">
                     <Link 

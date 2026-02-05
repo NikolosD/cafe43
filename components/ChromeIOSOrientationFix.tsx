@@ -5,7 +5,7 @@ import { isChromeIOS, useChromeIOSOrientationFix } from '@/lib/useChromeIOS';
 
 /**
  * Ensures the Chrome iOS specific class is applied
- * and normalizes viewport height on rotation.
+ * and registers the orientation-change reflow workaround once.
  */
 export default function ChromeIOSOrientationFix() {
     useChromeIOSOrientationFix();

@@ -45,7 +45,7 @@ export default function ItemDetailSheet({ item, isOpen, onClose }: ItemDetailShe
                 showCloseButton={false}
                 className="h-[88dvh] sm:h-[85vh] sm:max-w-xl sm:left-1/2 sm:-translate-x-1/2 p-0 overflow-hidden rounded-t-[32px] border-none bg-white focus-visible:ring-0 shadow-2xl"
                 style={{ 
-                    maxHeight: 'calc(var(--app-height, 100dvh) - 40px)'
+                    maxHeight: 'calc(100dvh - 40px)'
                 }}
             >
                 <div 
