@@ -22,35 +22,40 @@ export const useChromeIOS = () => {
 
 let orientationFixInitialized = false;
 
-// Force style recalculation on orientation change for Chrome iOS
+// Normalize viewport height on Chrome iOS to avoid layout thrash on rotate
 export const useChromeIOSOrientationFix = () => {
     useEffect(() => {
         if (!isChromeIOS() || orientationFixInitialized) return;
 
         orientationFixInitialized = true;
 
-        let timeoutId: ReturnType<typeof setTimeout> | null = null;
-        
-        const handleOrientationChange = () => {
-            // Force redraw after orientation change
-            if (timeoutId) {
-                clearTimeout(timeoutId);
+        let rafId: number | null = null;
+
+        const applyAppHeight = () => {
+            if (rafId !== null) {
+                cancelAnimationFrame(rafId);
             }
-            timeoutId = setTimeout(() => {
-                // Trigger style recalculation
-                document.body.style.display = 'none';
-                void document.body.offsetHeight; // Force reflow
-                document.body.style.display = '';
-            }, 100);
+            rafId = requestAnimationFrame(() => {
+                const height = window.visualViewport?.height ?? window.innerHeight;
+                document.documentElement.style.setProperty('--app-height', `${height}px`);
+                rafId = null;
+            });
         };
 
-        window.addEventListener('orientationchange', handleOrientationChange, { passive: true });
-        
+        applyAppHeight();
+
+        window.addEventListener('orientationchange', applyAppHeight, { passive: true });
+        window.addEventListener('resize', applyAppHeight, { passive: true });
+        window.visualViewport?.addEventListener('resize', applyAppHeight, { passive: true });
+
         return () => {
-            window.removeEventListener('orientationchange', handleOrientationChange);
-            if (timeoutId) {
-                clearTimeout(timeoutId);
+            window.removeEventListener('orientationchange', applyAppHeight);
+            window.removeEventListener('resize', applyAppHeight);
+            window.visualViewport?.removeEventListener('resize', applyAppHeight);
+            if (rafId !== null) {
+                cancelAnimationFrame(rafId);
             }
+            document.documentElement.style.removeProperty('--app-height');
             orientationFixInitialized = false;
         };
     }, []);

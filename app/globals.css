@@ -334,6 +334,19 @@
   .chrome-ios * {
     will-change: auto !important;
   }
+
+  /* Stabilize viewport height on Chrome iOS */
+  .chrome-ios {
+    --app-height: 100vh;
+  }
+
+  .chrome-ios .min-h-screen {
+    min-height: var(--app-height);
+  }
+  
+  .chrome-ios .h-screen {
+    height: var(--app-height);
+  }
   
   /* Regular iOS fixes */
   @supports (-webkit-touch-callout: none) {
