@@ -10,19 +10,29 @@ import { getUserRole } from '@/lib/db';
 
 interface MenuHeaderProps {
     restaurantName?: string;
-    locale?: string;
 }
 
-export default function MenuHeader({ restaurantName = "Cafe 43", locale = 'ge' }: MenuHeaderProps) {
+export default function MenuHeader({ restaurantName = "Cafe 43" }: MenuHeaderProps) {
     const [isAdmin, setIsAdmin] = useState(false);
     const supabase = createClient();
 
     useEffect(() => {
         const checkAuth = async () => {
-            const { data: { user } } = await supabase.auth.getUser();
+            console.log('[MenuHeader] Checking auth...');
+            const { data: { user }, error } = await supabase.auth.getUser();
+            console.log('[MenuHeader] User:', user, 'Error:', error);
+            
             if (user) {
-                const role = await getUserRole(supabase, user.id);
-                setIsAdmin(!!role);
+                console.log('[MenuHeader] User ID:', user.id);
+                try {
+                    const role = await getUserRole(supabase, user.id);
+                    console.log('[MenuHeader] Role:', role);
+                    setIsAdmin(!!role);
+                } catch (e) {
+                    console.error('[MenuHeader] Error getting role:', e);
+                }
+            } else {
+                console.log('[MenuHeader] No user found');
             }
         };
         checkAuth();
@@ -59,7 +69,7 @@ export default function MenuHeader({ restaurantName = "Cafe 43", locale = 'ge' }
                 <div className="flex items-center gap-2">
                     {isAdmin && (
                         <Link 
-                            href={`/${locale}/admin/categories`}
+                            href="/admin/categories"
                             className="flex items-center gap-1.5 px-3 py-1.5 bg-zinc-900 text-white text-sm font-medium rounded-full hover:bg-zinc-800 transition-colors"
                         >
                             <Settings className="w-4 h-4" />

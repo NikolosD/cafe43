@@ -42,7 +42,7 @@ export default async function MenuPage({
                     <div className="hidden sm:block absolute bottom-20 right-10 w-40 h-40 rounded-full bg-primary/5 blur-2xl" />
                 </div>
 
-                <MenuHeader locale={locale} />
+                <MenuHeader />
 
                 {activeCategory && (
                     <CategoryStickyHeader categoryTitle={activeCategory.title} icon={activeCategory.icon} />
