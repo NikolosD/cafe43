@@ -3,7 +3,7 @@
 import { Link, usePathname, useRouter } from '@/lib/navigation';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { LayoutDashboard, UtensilsCrossed, LogOut, Coffee, Menu, QrCode, Settings, Store } from 'lucide-react';
+import { LayoutDashboard, UtensilsCrossed, LogOut, Coffee, Menu, QrCode, Settings, Store, Users } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import {
     Sheet,
@@ -13,11 +13,12 @@ import {
     SheetTrigger,
     SheetClose
 } from "@/components/ui/sheet";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import LanguageSwitcher from '../Menu/LanguageSwitcher';
+import { getUserRole } from '@/lib/db';
 
 export default function AdminHeader() {
     const t = useTranslations('Admin');
@@ -25,6 +26,18 @@ export default function AdminHeader() {
     const router = useRouter();
     const supabase = createClient();
     const [open, setOpen] = useState(false);
+    const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+
+    useEffect(() => {
+        const checkRole = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                const role = await getUserRole(supabase, user.id);
+                setIsSuperAdmin(role?.role === 'superadmin');
+            }
+        };
+        checkRole();
+    }, [supabase]);
 
     const handleLogout = async () => {
         await supabase.auth.signOut();
@@ -37,6 +50,7 @@ export default function AdminHeader() {
         { href: '/admin/items', label: t('items'), icon: UtensilsCrossed },
         { href: '/admin/qr', label: t('qr'), icon: QrCode },
         { href: '/admin/settings', label: t('settings'), icon: Settings },
+        ...(isSuperAdmin ? [{ href: '/admin/users', label: t('users') || 'Users', icon: Users }] : []),
     ];
 
 

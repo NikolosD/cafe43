@@ -30,10 +30,14 @@ export default function AdminSidebar({ className }: AdminSidebarProps) {
 
     useEffect(() => {
         const checkRole = async () => {
+            console.log('[AdminSidebar] Checking role...');
             const { data: { user } } = await supabase.auth.getUser();
+            console.log('[AdminSidebar] User:', user?.id);
             if (user) {
                 const role = await getUserRole(supabase, user.id);
+                console.log('[AdminSidebar] Role:', role);
                 setIsSuperAdmin(role?.role === 'superadmin');
+                console.log('[AdminSidebar] isSuperAdmin:', role?.role === 'superadmin');
             }
         };
         checkRole();
