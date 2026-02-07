@@ -1,12 +1,15 @@
 import Image from 'next/image';
 import { Link } from '@/lib/navigation';
 import LanguageSwitcher from './LanguageSwitcher';
+import { Settings } from 'lucide-react';
 
 interface MenuHeaderProps {
     restaurantName?: string;
+    isAdmin?: boolean;
+    locale?: string;
 }
 
-export default function MenuHeader({ restaurantName = "Cafe 43" }: MenuHeaderProps) {
+export default function MenuHeader({ restaurantName = "Cafe 43", isAdmin = false, locale = 'ge' }: MenuHeaderProps) {
     return (
         <header className="sticky top-0 z-50 w-full chrome-ios-header">
             {/* Glassmorphism background - simplified for Chrome iOS */}
@@ -36,6 +39,15 @@ export default function MenuHeader({ restaurantName = "Cafe 43" }: MenuHeaderPro
                 </Link>
                 
                 <div className="flex items-center gap-2">
+                    {isAdmin && (
+                        <Link 
+                            href={`/${locale}/admin/categories`}
+                            className="flex items-center gap-1.5 px-3 py-1.5 bg-zinc-900 text-white text-sm font-medium rounded-full hover:bg-zinc-800 transition-colors"
+                        >
+                            <Settings className="w-4 h-4" />
+                            <span className="hidden sm:inline">Admin</span>
+                        </Link>
+                    )}
                     <LanguageSwitcher />
                 </div>
             </div>

@@ -1,6 +1,6 @@
 import { cookies } from 'next/headers';
 import { createClient } from '@/lib/supabase/server';
-import { getPublicMenu, getSettings, getDeliveryLinks } from '@/lib/db';
+import { getPublicMenu, getSettings, getDeliveryLinks, getUserRole } from '@/lib/db';
 import MenuHeader from '@/components/Menu/MenuHeader';
 import MenuList from '@/components/Menu/MenuList';
 import MenuFooter from '@/components/Menu/MenuFooter';
@@ -27,6 +27,11 @@ export default async function MenuPage({
     const settings = await getSettings(supabase);
     const deliveryLinks = await getDeliveryLinks(supabase, locale);
 
+    // Check if user is admin
+    const { data: { user } } = await supabase.auth.getUser();
+    const userRole = user ? await getUserRole(supabase, user.id) : null;
+    const isAdmin = !!userRole;
+
     const activeCategory = activeCategoryId ? menu.find((c: any) => c.id === activeCategoryId) : null;
 
     return (
@@ -42,7 +47,7 @@ export default async function MenuPage({
                     <div className="hidden sm:block absolute bottom-20 right-10 w-40 h-40 rounded-full bg-primary/5 blur-2xl" />
                 </div>
 
-                <MenuHeader />
+                <MenuHeader isAdmin={isAdmin} locale={locale} />
 
                 {activeCategory && (
                     <CategoryStickyHeader categoryTitle={activeCategory.title} icon={activeCategory.icon} />
