@@ -109,7 +109,7 @@ export default function ItemDetailSheet({ item, isOpen, onClose }: ItemDetailShe
                 ref={contentRef}
                 side="bottom"
                 showCloseButton={false}
-                className="h-[88dvh] sm:h-[85vh] sm:max-w-xl sm:left-1/2 sm:-translate-x-1/2 p-0 overflow-hidden rounded-t-[32px] border-none bg-white focus-visible:ring-0 shadow-2xl"
+                className="h-[88dvh] landscape:h-auto landscape:max-h-[90dvh] sm:h-[85vh] sm:max-w-xl sm:left-1/2 sm:-translate-x-1/2 p-0 overflow-hidden rounded-t-[32px] border-none bg-white focus-visible:ring-0 shadow-2xl"
                 style={{ 
                     maxHeight: 'calc(100dvh - 40px)'
                 }}
@@ -130,7 +130,7 @@ export default function ItemDetailSheet({ item, isOpen, onClose }: ItemDetailShe
                     </div>
 
                     {/* Hero Image */}
-                    <div className="relative w-full h-[45vh] sm:h-[40vh] max-h-[400px] bg-gradient-to-br from-muted to-muted/50 shrink-0 pt-8">
+                    <div className="relative w-full h-[45vh] sm:h-[40vh] landscape:h-[30vh] max-h-[400px] landscape:max-h-[200px] bg-gradient-to-br from-muted to-muted/50 shrink-0 pt-8">
                         {item.image_url ? (
                             <Image
                                 src={item.image_url}

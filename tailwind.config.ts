@@ -17,6 +17,9 @@ const config = {
                 "2xl": "1400px",
             },
         },
+        screens: {
+            'landscape': {'raw': '(orientation: landscape)'},
+        },
         extend: {
             fontFamily: {
                 sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
