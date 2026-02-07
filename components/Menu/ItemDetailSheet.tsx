@@ -26,21 +26,6 @@ export default function ItemDetailSheet({ item, isOpen, onClose }: ItemDetailShe
     const currentYRef = useRef(0);
     const contentRef = useRef<HTMLDivElement>(null);
 
-    // Fix for orientation change - close sheet to prevent crashes
-    useEffect(() => {
-        const handleOrientationChange = () => {
-            if (isOpen) {
-                onClose();
-            }
-        };
-
-        window.addEventListener('orientationchange', handleOrientationChange, { passive: true });
-
-        return () => {
-            window.removeEventListener('orientationchange', handleOrientationChange);
-        };
-    }, [isOpen, onClose]);
-
     // Reset transform and overlay when sheet opens
     useEffect(() => {
         if (isOpen && contentRef.current) {
