@@ -1,6 +1,6 @@
 import { cookies } from 'next/headers';
 import { createClient } from '@/lib/supabase/server';
-import { getPublicMenu, getSettings } from '@/lib/db';
+import { getPublicMenu, getSettings, getDeliveryLinks } from '@/lib/db';
 import MenuHeader from '@/components/Menu/MenuHeader';
 import MenuList from '@/components/Menu/MenuList';
 import MenuFooter from '@/components/Menu/MenuFooter';
@@ -25,6 +25,7 @@ export default async function MenuPage({
     const menu = await getPublicMenu(supabase, locale, activeCategoryId);
 
     const settings = await getSettings(supabase);
+    const deliveryLinks = await getDeliveryLinks(supabase, locale);
 
     const activeCategory = activeCategoryId ? menu.find((c: any) => c.id === activeCategoryId) : null;
 
@@ -50,7 +51,7 @@ export default async function MenuPage({
                 <main className="flex-grow">
                     <MenuList menu={menu} />
                 </main>
-                <MenuFooter settings={settings} />
+                <MenuFooter settings={settings} deliveryLinks={deliveryLinks} />
             </div>
         </ErrorBoundary>
     );

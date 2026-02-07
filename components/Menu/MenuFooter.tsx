@@ -6,15 +6,20 @@ interface MenuFooterProps {
         google_maps_url: string | null;
         instagram_url: string | null;
     } | null;
+    deliveryLinks?: {
+        glovo?: string;
+        wolt?: string;
+    };
 }
 
-export default function MenuFooter({ settings }: MenuFooterProps) {
+export default function MenuFooter({ settings, deliveryLinks = {} }: MenuFooterProps) {
     if (!settings) return null;
 
     const { address, google_maps_url, instagram_url } = settings;
+    const { glovo: glovo_url, wolt: wolt_url } = deliveryLinks;
 
     // If everything is missing, hide footer
-    if (!address && !instagram_url) return null;
+    if (!address && !instagram_url && !glovo_url && !wolt_url) return null;
 
     return (
         <footer className="mt-auto relative overflow-hidden">
@@ -32,20 +37,20 @@ export default function MenuFooter({ settings }: MenuFooterProps) {
                         <div className="h-px flex-1 max-w-[60px] bg-gradient-to-l from-transparent to-primary/30" />
                     </div>
 
-                    {/* Contact Buttons Grid */}
-                    <div className="flex flex-wrap justify-center gap-3 w-full">
+                    {/* Contact Buttons Grid - Vertical stack */}
+                    <div className="flex flex-col items-center gap-3 w-full max-w-xs mx-auto">
                         {/* Address */}
                         {address && (
                             <a
                                 href={google_maps_url || '#'}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="flex items-center gap-2.5 px-5 py-3 rounded-2xl bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-black/5 hover:shadow-lg hover:border-primary/20 hover:-translate-y-0.5 transition-all duration-300 group"
+                                className="flex items-center justify-center gap-2.5 px-5 py-3 rounded-2xl bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-black/5 hover:shadow-lg hover:border-primary/20 hover:-translate-y-0.5 transition-all duration-300 group w-full"
                             >
                                 <div className="p-1.5 rounded-full bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white transition-colors">
                                     <MapPin className="w-4 h-4" />
                                 </div>
-                                <span className="text-sm font-medium text-foreground/80 max-w-[150px] leading-snug">
+                                <span className="text-sm font-medium text-foreground/80 leading-snug">
                                     {address}
                                 </span>
                             </a>
@@ -57,10 +62,34 @@ export default function MenuFooter({ settings }: MenuFooterProps) {
                                 href={instagram_url}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="flex items-center gap-2.5 px-6 py-3 rounded-2xl bg-gradient-to-r from-purple-500 via-pink-500 to-orange-400 text-white font-medium hover:shadow-lg hover:shadow-pink-500/25 hover:-translate-y-0.5 transition-all duration-300 active:scale-95"
+                                className="flex items-center justify-center gap-2.5 px-6 py-3 rounded-2xl bg-gradient-to-r from-purple-500 via-pink-500 to-orange-400 text-white font-medium hover:shadow-lg hover:shadow-pink-500/25 hover:-translate-y-0.5 transition-all duration-300 active:scale-95 w-full"
                             >
                                 <Instagram className="w-4 h-4" />
                                 <span>Instagram</span>
+                            </a>
+                        )}
+
+                        {/* Glovo */}
+                        {glovo_url && (
+                            <a
+                                href={glovo_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center justify-center px-6 py-2.5 rounded-xl bg-[#FFC600] hover:shadow-lg hover:shadow-[#FFC600]/30 hover:-translate-y-0.5 transition-all duration-300 active:scale-95 w-full"
+                            >
+                                <span className="text-[#009646] font-black text-base tracking-tight" style={{ fontFamily: 'system-ui, sans-serif' }}>Glovo</span>
+                            </a>
+                        )}
+
+                        {/* Wolt */}
+                        {wolt_url && (
+                            <a
+                                href={wolt_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center justify-center px-6 py-2.5 rounded-xl bg-[#009DE0] hover:shadow-lg hover:shadow-[#009DE0]/30 hover:-translate-y-0.5 transition-all duration-300 active:scale-95 w-full"
+                            >
+                                <span className="text-white font-bold text-base tracking-tight" style={{ fontFamily: 'system-ui, sans-serif' }}>Wolt</span>
                             </a>
                         )}
                     </div>

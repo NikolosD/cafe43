@@ -75,6 +75,7 @@
         "maps_url": "Google Maps URL",
         "social_links": "Social Links",
         "instagram_link": "Instagram Account Link",
+        "delivery_links": "Delivery",
         "save_settings": "Save Settings",
         "settings_saved": "Settings saved successfully",
         "settings_error": "Failed to save settings",

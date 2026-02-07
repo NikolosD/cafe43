@@ -100,6 +100,25 @@ export async function getSettings(supabase: SupabaseClient) {
     return data || null;
 }
 
+export async function getDeliveryLinks(supabase: SupabaseClient, locale: string): Promise<Record<string, string>> {
+    const { data, error } = await supabase
+        .from('delivery_links')
+        .select('*')
+        .eq('lang', locale);
+
+    if (error) {
+        console.error('Error fetching delivery links:', error);
+        return {};
+    }
+
+    // Convert array to object with platform as key
+    const links: Record<string, string> = {};
+    data?.forEach((link: any) => {
+        links[link.platform] = link.url;
+    });
+    return links;
+}
+
 export async function adminUpdateSettings(supabase: SupabaseClient, settings: any) {
     const { data, error } = await supabase
         .from('settings')
@@ -109,6 +128,27 @@ export async function adminUpdateSettings(supabase: SupabaseClient, settings: an
 
     if (error) throw error;
     return data;
+}
+
+export async function adminGetAllDeliveryLinks(supabase: SupabaseClient) {
+    const { data, error } = await supabase
+        .from('delivery_links')
+        .select('*')
+        .order('platform', { ascending: true });
+
+    if (error) throw error;
+    return data || [];
+}
+
+export async function adminUpdateDeliveryLink(supabase: SupabaseClient, platform: string, lang: string, url: string) {
+    const { error } = await supabase
+        .from('delivery_links')
+        .upsert(
+            { platform, lang, url, updated_at: new Date().toISOString() },
+            { onConflict: 'platform,lang' }
+        );
+
+    if (error) throw error;
 }
 
 // --- ADMIN CATEGORIES ---
