@@ -1,15 +1,33 @@
+'use client';
+
 import Image from 'next/image';
 import { Link } from '@/lib/navigation';
 import LanguageSwitcher from './LanguageSwitcher';
 import { Settings } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { createClient } from '@/lib/supabase/client';
+import { getUserRole } from '@/lib/db';
 
 interface MenuHeaderProps {
     restaurantName?: string;
-    isAdmin?: boolean;
     locale?: string;
 }
 
-export default function MenuHeader({ restaurantName = "Cafe 43", isAdmin = false, locale = 'ge' }: MenuHeaderProps) {
+export default function MenuHeader({ restaurantName = "Cafe 43", locale = 'ge' }: MenuHeaderProps) {
+    const [isAdmin, setIsAdmin] = useState(false);
+    const supabase = createClient();
+
+    useEffect(() => {
+        const checkAuth = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                const role = await getUserRole(supabase, user.id);
+                setIsAdmin(!!role);
+            }
+        };
+        checkAuth();
+    }, [supabase]);
+
     return (
         <header className="sticky top-0 z-50 w-full chrome-ios-header">
             {/* Glassmorphism background - simplified for Chrome iOS */}
