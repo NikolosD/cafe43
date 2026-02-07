@@ -234,3 +234,58 @@ export async function adminDeleteItem(supabase: SupabaseClient, id: string) {
     const { error } = await supabase.from('items').delete().eq('id', id);
     if (error) throw error;
 }
+
+// --- USER ROLES ---
+
+export async function getUserRole(supabase: SupabaseClient, userId: string) {
+    const { data, error } = await supabase
+        .from('user_roles')
+        .select('*')
+        .eq('user_id', userId)
+        .single();
+
+    if (error && error.code !== 'PGRST116') {
+        console.error('Error fetching user role:', error);
+    }
+    return data;
+}
+
+export async function getAllUsers(supabase: SupabaseClient) {
+    const { data, error } = await supabase
+        .from('user_roles')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data || [];
+}
+
+export async function adminCreateUser(supabase: SupabaseClient, email: string, password: string, role: 'admin' | 'superadmin' = 'admin') {
+    // 1. Create user in auth
+    const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+        email,
+        password,
+        email_confirm: true,
+    });
+
+    if (authError) throw authError;
+    if (!authData.user) throw new Error('Failed to create user');
+
+    // 2. Role will be auto-assigned by trigger, but we can update it if needed
+    if (role === 'superadmin') {
+        const { error: roleError } = await supabase
+            .from('user_roles')
+            .update({ role })
+            .eq('user_id', authData.user.id);
+        
+        if (roleError) throw roleError;
+    }
+
+    return authData.user;
+}
+
+export async function adminDeleteUser(supabase: SupabaseClient, userId: string) {
+    // Delete from auth (cascade will delete from user_roles)
+    const { error } = await supabase.auth.admin.deleteUser(userId);
+    if (error) throw error;
+}

@@ -4,10 +4,12 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { LayoutDashboard, UtensilsCrossed, LogOut, Coffee, Menu, Settings, QrCode } from 'lucide-react';
+import { LayoutDashboard, UtensilsCrossed, LogOut, Coffee, Menu, Settings, QrCode, Users } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
+import { useEffect, useState } from 'react';
+import { getUserRole } from '@/lib/db';
 
 interface AdminSidebarProps {
     className?: string;
@@ -18,6 +20,7 @@ export default function AdminSidebar({ className }: AdminSidebarProps) {
     const router = useRouter();
     const t = useTranslations('Admin');
     const supabase = createClient();
+    const [isSuperAdmin, setIsSuperAdmin] = useState(false);
 
     const handleLogout = async () => {
         await supabase.auth.signOut();
@@ -25,11 +28,23 @@ export default function AdminSidebar({ className }: AdminSidebarProps) {
         router.refresh();
     };
 
+    useEffect(() => {
+        const checkRole = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                const role = await getUserRole(supabase, user.id);
+                setIsSuperAdmin(role?.role === 'superadmin');
+            }
+        };
+        checkRole();
+    }, [supabase]);
+
     const navItems = [
         { href: '/admin/categories', label: t('categories'), icon: LayoutDashboard },
         { href: '/admin/items', label: t('items'), icon: UtensilsCrossed },
         { href: '/admin/qr', label: t('qr'), icon: QrCode },
         { href: '/admin/settings', label: t('settings'), icon: Settings },
+        ...(isSuperAdmin ? [{ href: '/admin/users', label: t('users') || 'Users', icon: Users }] : []),
     ];
 
     return (

@@ -68,6 +68,7 @@
         "primary": "Primary",
         "save_dish": "Save Dish",
         "qr_desc": "Generate QR codes for tables and specific languages.",
+        "users": "Users",
         "settings": "Settings",
         "settings_desc_page": "Manage global information displayed on your menu's footer.",
         "footer_info": "Footer Information",
