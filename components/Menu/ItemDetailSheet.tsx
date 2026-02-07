@@ -9,7 +9,7 @@ import Icon from '@/components/Icon';
 import { Item } from "@/lib/db";
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
-import { useEffect } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 
 interface ItemDetailSheetProps {
     item: Item | null;
@@ -20,6 +20,11 @@ interface ItemDetailSheetProps {
 export default function ItemDetailSheet({ item, isOpen, onClose }: ItemDetailSheetProps) {
     const t = useTranslations('Menu');
     const ta = useTranslations('Admin');
+    const dragRef = useRef<HTMLDivElement>(null);
+    const [isDragging, setIsDragging] = useState(false);
+    const startYRef = useRef(0);
+    const currentYRef = useRef(0);
+    const contentRef = useRef<HTMLDivElement>(null);
 
     // Fix for orientation change - close sheet to prevent crashes
     useEffect(() => {
@@ -35,12 +40,73 @@ export default function ItemDetailSheet({ item, isOpen, onClose }: ItemDetailShe
             window.removeEventListener('orientationchange', handleOrientationChange);
         };
     }, [isOpen, onClose]);
+
+    // Reset transform and overlay when sheet opens
+    useEffect(() => {
+        if (isOpen && contentRef.current) {
+            contentRef.current.style.transform = '';
+            contentRef.current.style.transition = '';
+            // Reset overlay opacity
+            const overlay = document.querySelector('.fixed.inset-0.z-50.bg-black\\/80') as HTMLElement;
+            if (overlay) {
+                overlay.style.opacity = '';
+            }
+        }
+    }, [isOpen]);
+
+    // Swipe down to close
+    const handleTouchStart = useCallback((e: React.TouchEvent) => {
+        setIsDragging(true);
+        startYRef.current = e.touches[0].clientY;
+        currentYRef.current = e.touches[0].clientY;
+    }, []);
+
+    const handleTouchMove = useCallback((e: React.TouchEvent) => {
+        if (!isDragging) return;
+        currentYRef.current = e.touches[0].clientY;
+        const diff = currentYRef.current - startYRef.current;
+        
+        if (diff > 0 && contentRef.current) {
+            contentRef.current.style.transform = `translateY(${diff}px)`;
+            contentRef.current.style.transition = 'none';
+            // Fade out overlay as user swipes down
+            const overlay = document.querySelector('[data-state="open"].fixed.inset-0.z-50.bg-black\\/80') as HTMLElement;
+            if (overlay) {
+                const opacity = Math.max(0, 0.8 - (diff / 400));
+                overlay.style.opacity = String(opacity);
+            }
+        }
+    }, [isDragging]);
+
+    const handleTouchEnd = useCallback(() => {
+        if (!isDragging) return;
+        setIsDragging(false);
+        
+        const diff = currentYRef.current - startYRef.current;
+        const threshold = 100; // px to trigger close
+        
+        // Reset overlay opacity
+        const overlay = document.querySelector('.fixed.inset-0.z-50.bg-black\\/80') as HTMLElement;
+        if (overlay) {
+            overlay.style.opacity = '';
+        }
+        
+        if (contentRef.current) {
+            if (diff > threshold) {
+                onClose();
+            } else {
+                contentRef.current.style.transition = 'transform 0.3s ease-out';
+                contentRef.current.style.transform = '';
+            }
+        }
+    }, [isDragging, onClose]);
     
     if (!item) return null;
 
     return (
         <Sheet open={isOpen} onOpenChange={onClose}>
             <SheetContent
+                ref={contentRef}
                 side="bottom"
                 showCloseButton={false}
                 className="h-[88dvh] sm:h-[85vh] sm:max-w-xl sm:left-1/2 sm:-translate-x-1/2 p-0 overflow-hidden rounded-t-[32px] border-none bg-white focus-visible:ring-0 shadow-2xl"
@@ -51,9 +117,14 @@ export default function ItemDetailSheet({ item, isOpen, onClose }: ItemDetailShe
                 <div 
                     className="h-full flex flex-col overflow-y-auto scrollbar-hide"
                 >
-                    {/* Drag Handle - disabled for Chrome iOS */}
+                    {/* Drag Handle with swipe down */}
                     <div 
-                        className="absolute top-0 left-0 right-0 h-12 z-50 flex items-center justify-center"
+                        ref={dragRef}
+                        onTouchStart={handleTouchStart}
+                        onTouchMove={handleTouchMove}
+                        onTouchEnd={handleTouchEnd}
+                        className="absolute top-0 left-0 right-0 h-12 z-50 flex items-center justify-center touch-pan-y"
+                        style={{ touchAction: 'pan-y' }}
                     >
                         <div className="w-10 h-1.5 bg-zinc-300 rounded-full" />
                     </div>
