@@ -302,6 +302,12 @@
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
   }
+
+  /* Prevent Chrome iOS landscape auto-zoom via text size adjustment */
+  .chrome-ios {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
   
   .chrome-ios .glass,
   .chrome-ios .glass-dark {
@@ -334,7 +340,21 @@
   .chrome-ios * {
     will-change: auto !important;
   }
-  
+
+  /* Chrome iOS: use simpler layout */
+  .chrome-ios .menu-bg {
+    display: none !important;
+  }
+
+  .chrome-ios .chrome-ios-header,
+  .chrome-ios .chrome-ios-sticky {
+    position: static !important;
+    top: auto !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
   /* Regular iOS fixes */
   @supports (-webkit-touch-callout: none) {
     .backdrop-blur-xl {

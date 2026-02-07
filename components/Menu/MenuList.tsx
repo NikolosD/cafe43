@@ -11,7 +11,7 @@ import Image from 'next/image';
 import ItemDetailSheet from './ItemDetailSheet';
 import { useTranslations } from 'next-intl';
 import { Item } from '@/lib/db';
-import { CakeSlice, Coffee, GlassWater, Sparkles } from 'lucide-react';
+import { getCategoryIcon } from '@/lib/categoryIcons';
 import Link from 'next/link';
 import Icon from '@/components/Icon';
 
@@ -94,10 +94,11 @@ export default function MenuList({ menu }: { menu: any[] }) {
                                 <div className="flex-[1.1] flex flex-col justify-center px-6 sm:px-10 text-left z-10 transition-colors">
                                     <div className="flex items-center gap-3 mb-2">
                                         <div className="p-2.5 rounded-xl bg-gradient-to-br from-primary/10 via-primary/5 to-accent/10 text-primary shadow-sm border border-primary/10">
-                                            {category.title.toLowerCase().includes('des') || category.title.toLowerCase().includes('дес') || category.title.toLowerCase().includes('დეს') ? <Icon icon={CakeSlice} size={24} strokeWidth={1.5} /> :
-                                                category.title.toLowerCase().includes('hot') || category.title.toLowerCase().includes('горяч') || category.title.toLowerCase().includes('ცხელ') ? <Icon icon={Coffee} size={24} strokeWidth={1.5} /> :
-                                                    category.title.toLowerCase().includes('cold') || category.title.toLowerCase().includes('холод') || category.title.toLowerCase().includes('ცივი') ? <Icon icon={GlassWater} size={24} strokeWidth={1.5} /> :
-                                                        <Icon icon={Sparkles} size={24} strokeWidth={1.5} />}
+                                            <Icon
+                                                icon={getCategoryIcon(category.title, category.icon)}
+                                                size={24}
+                                                strokeWidth={1.5}
+                                            />
                                         </div>
                                     </div>
                                     <h3 className="text-zinc-900 font-extrabold text-xl sm:text-3xl leading-[1.1] sm:leading-none uppercase tracking-tighter">

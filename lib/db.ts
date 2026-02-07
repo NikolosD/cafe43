@@ -5,6 +5,7 @@ export type Category = {
     id: string;
     sort: number;
     image_url: string | null;
+    icon?: string | null;
     is_active: boolean;
     translations: { title: string; lang: string }[];
 };
