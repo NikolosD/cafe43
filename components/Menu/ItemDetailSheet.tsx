@@ -117,14 +117,21 @@ export default function ItemDetailSheet({ item, isOpen, onClose }: ItemDetailShe
                 <div 
                     className="h-full flex flex-col overflow-y-auto scrollbar-hide"
                 >
-                    {/* Drag Handle with swipe down */}
+                    {/* Drag Handle with swipe down - mobile only */}
                     <div 
                         ref={dragRef}
                         onTouchStart={handleTouchStart}
                         onTouchMove={handleTouchMove}
                         onTouchEnd={handleTouchEnd}
-                        className="absolute top-0 left-0 right-0 h-12 z-50 flex items-center justify-center touch-pan-y"
+                        className="absolute top-0 left-0 right-0 h-12 z-50 flex items-center justify-center touch-pan-y sm:hidden"
                         style={{ touchAction: 'pan-y' }}
+                    >
+                        <div className="w-10 h-1.5 bg-zinc-300 rounded-full" />
+                    </div>
+                    
+                    {/* Drag Handle without swipe - desktop/tablet */}
+                    <div 
+                        className="absolute top-0 left-0 right-0 h-12 z-50 hidden sm:flex items-center justify-center"
                     >
                         <div className="w-10 h-1.5 bg-zinc-300 rounded-full" />
                     </div>
