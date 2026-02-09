@@ -7,6 +7,7 @@ import LocaleInitializer from '@/components/LocaleInitializer';
 import ResizeObserverFix from '@/components/ResizeObserverFix';
 import ChromeIOSOrientationFix from '@/components/ChromeIOSOrientationFix';
 import Script from 'next/script';
+import { Analytics } from "@vercel/analytics/next";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -57,6 +58,7 @@ export default async function RootLayout({
                     <LocaleInitializer />
                     {children}
                 </NextIntlClientProvider>
+                <Analytics />
             </body>
         </html>
     );
