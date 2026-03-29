@@ -1,22 +1,24 @@
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 import { getUserRole } from '@/lib/db';
 
+async function verifySuperadmin() {
+    const cookieStore = cookies();
+    const supabase = createClient(cookieStore);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return null;
+    const role = await getUserRole(supabase, user.id);
+    if (role?.role !== 'superadmin') return null;
+    return user;
+}
+
 // POST - Create new user
 export async function POST(request: NextRequest) {
     try {
-        const cookieStore = cookies();
-        const supabase = createClient(cookieStore);
-
-        // Check if current user is superadmin
-        const { data: { user: currentUser } } = await supabase.auth.getUser();
+        const currentUser = await verifySuperadmin();
         if (!currentUser) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-        }
-
-        const currentRole = await getUserRole(supabase, currentUser.id);
-        if (currentRole?.role !== 'superadmin') {
             return NextResponse.json({ error: 'Forbidden - Superadmin only' }, { status: 403 });
         }
 
@@ -26,8 +28,9 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Email and password required' }, { status: 400 });
         }
 
-        // Create user using admin API
-        const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+        const adminSupabase = createAdminClient();
+
+        const { data: authData, error: authError } = await adminSupabase.auth.admin.createUser({
             email,
             password,
             email_confirm: true,
@@ -41,9 +44,8 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Failed to create user' }, { status: 500 });
         }
 
-        // Update role if superadmin was requested
         if (role === 'superadmin') {
-            const { error: roleError } = await supabase
+            const { error: roleError } = await adminSupabase
                 .from('user_roles')
                 .update({ role })
                 .eq('user_id', authData.user.id);
@@ -62,17 +64,8 @@ export async function POST(request: NextRequest) {
 // DELETE - Delete user
 export async function DELETE(request: NextRequest) {
     try {
-        const cookieStore = cookies();
-        const supabase = createClient(cookieStore);
-
-        // Check if current user is superadmin
-        const { data: { user: currentUser } } = await supabase.auth.getUser();
+        const currentUser = await verifySuperadmin();
         if (!currentUser) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-        }
-
-        const currentRole = await getUserRole(supabase, currentUser.id);
-        if (currentRole?.role !== 'superadmin') {
             return NextResponse.json({ error: 'Forbidden - Superadmin only' }, { status: 403 });
         }
 
@@ -82,13 +75,12 @@ export async function DELETE(request: NextRequest) {
             return NextResponse.json({ error: 'User ID required' }, { status: 400 });
         }
 
-        // Prevent deleting yourself
         if (userId === currentUser.id) {
             return NextResponse.json({ error: 'Cannot delete yourself' }, { status: 400 });
         }
 
-        // Delete user
-        const { error } = await supabase.auth.admin.deleteUser(userId);
+        const adminSupabase = createAdminClient();
+        const { error } = await adminSupabase.auth.admin.deleteUser(userId);
 
         if (error) {
             return NextResponse.json({ error: error.message }, { status: 500 });

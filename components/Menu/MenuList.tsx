@@ -48,8 +48,8 @@ export default function MenuList({ menu }: { menu: any[] }) {
         // Use replace for faster navigation, then push to history
         router.push(`${pathname}?${params.toString()}`, { scroll: false });
         
-        // Reset navigation lock
-        setTimeout(() => setIsNavigating(false), 300);
+        // Reset navigation lock after transition
+        requestAnimationFrame(() => setIsNavigating(false));
     }, [isNavigating, pathname, router, searchParams]);
 
     if (!mounted) {

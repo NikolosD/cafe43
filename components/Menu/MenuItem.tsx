@@ -1,14 +1,19 @@
+'use client';
+
 import Image from 'next/image';
 import { cn } from "@/lib/utils";
 import { Sparkles } from 'lucide-react';
 import Icon from '@/components/Icon';
+import { Item } from '@/lib/db';
+import { useTranslations } from 'next-intl';
 
 interface MenuItemProps {
-    item: any;
-    onClick?: (item: any) => void;
+    item: Item;
+    onClick?: (item: Item) => void;
 }
 
 export default function MenuItem({ item, onClick }: MenuItemProps) {
+    const ta = useTranslations('Admin');
     const { title, description, price, image_url: imageUrl, is_active: isActive = true } = item;
 
     return (
@@ -64,7 +69,7 @@ export default function MenuItem({ item, onClick }: MenuItemProps) {
 
                 {!isActive && (
                     <span className="absolute top-0 right-0 text-[10px] uppercase font-bold tracking-wider text-muted-foreground/70 bg-black/5 px-2.5 py-1 rounded-full">
-                        Sold Out
+                        {ta('sold_out')}
                     </span>
                 )}
             </div>

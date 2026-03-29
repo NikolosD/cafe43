@@ -260,32 +260,5 @@ export async function getAllUsers(supabase: SupabaseClient) {
     return data || [];
 }
 
-export async function adminCreateUser(supabase: SupabaseClient, email: string, password: string, role: 'admin' | 'superadmin' = 'admin') {
-    // 1. Create user in auth
-    const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-        email,
-        password,
-        email_confirm: true,
-    });
-
-    if (authError) throw authError;
-    if (!authData.user) throw new Error('Failed to create user');
-
-    // 2. Role will be auto-assigned by trigger, but we can update it if needed
-    if (role === 'superadmin') {
-        const { error: roleError } = await supabase
-            .from('user_roles')
-            .update({ role })
-            .eq('user_id', authData.user.id);
-        
-        if (roleError) throw roleError;
-    }
-
-    return authData.user;
-}
-
-export async function adminDeleteUser(supabase: SupabaseClient, userId: string) {
-    // Delete from auth (cascade will delete from user_roles)
-    const { error } = await supabase.auth.admin.deleteUser(userId);
-    if (error) throw error;
-}
+// User creation and deletion are handled in /api/admin/users/route.ts
+// using the service role client (lib/supabase/admin.ts)

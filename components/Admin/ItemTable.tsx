@@ -114,8 +114,13 @@ export default function ItemTable({ initialItems, categories }: ItemTableProps) 
     // Helper to get filename from URL
     const getStoragePath = (url: string | null) => {
         if (!url) return null;
-        const parts = url.split('/');
-        return parts[parts.length - 1];
+        try {
+            const pathname = new URL(url).pathname;
+            return pathname.split('/').pop() || null;
+        } catch {
+            const parts = url.split('/');
+            return parts[parts.length - 1].split('?')[0];
+        }
     };
 
     const deleteOldImage = async (url: string | null) => {

@@ -5,11 +5,10 @@ const withNextIntl = createNextIntlPlugin('./lib/i18n.ts');
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     images: {
-        unoptimized: true,
         remotePatterns: [
             {
                 protocol: 'https',
-                hostname: '**', // Allow all for demo purposes, restrict in prod
+                hostname: '*.supabase.co',
             },
         ],
     },

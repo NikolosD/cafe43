@@ -7,9 +7,6 @@ import MenuFooter from '@/components/Menu/MenuFooter';
 import CategoryStickyHeader from '@/components/Menu/CategoryStickyHeader';
 import ErrorBoundary from '@/components/ErrorBoundary';
 
-// ISR - кэширование страницы
-export const revalidate = 60;
-
 export default async function MenuPage({
     params: { locale },
     searchParams
@@ -21,11 +18,13 @@ export default async function MenuPage({
     const supabase = createClient(cookieStore);
 
     const activeCategoryId = searchParams.category;
-    // Optimize: Pass activeCategoryId to only fetch relevant items
-    const menu = await getPublicMenu(supabase, locale, activeCategoryId);
 
-    const settings = await getSettings(supabase);
-    const deliveryLinks = await getDeliveryLinks(supabase, locale);
+    // Parallel data fetching
+    const [menu, settings, deliveryLinks] = await Promise.all([
+        getPublicMenu(supabase, locale, activeCategoryId),
+        getSettings(supabase),
+        getDeliveryLinks(supabase, locale),
+    ]);
 
     const activeCategory = activeCategoryId ? menu.find((c: any) => c.id === activeCategoryId) : null;
 

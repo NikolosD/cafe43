@@ -31,7 +31,6 @@ export default function ItemDetailSheet({ item, isOpen, onClose }: ItemDetailShe
         if (isOpen && contentRef.current) {
             contentRef.current.style.transform = '';
             contentRef.current.style.transition = '';
-            // Reset overlay opacity
             const overlay = document.querySelector('.fixed.inset-0.z-50.bg-black\\/80') as HTMLElement;
             if (overlay) {
                 overlay.style.opacity = '';
@@ -50,11 +49,13 @@ export default function ItemDetailSheet({ item, isOpen, onClose }: ItemDetailShe
         if (!isDragging) return;
         currentYRef.current = e.touches[0].clientY;
         const diff = currentYRef.current - startYRef.current;
-        
+
         if (diff > 0 && contentRef.current) {
-            contentRef.current.style.transform = `translateY(${diff}px)`;
+            const isSm = window.innerWidth >= 640;
+            contentRef.current.style.transform = isSm
+                ? `translateX(-50%) translateY(${diff}px)`
+                : `translateY(${diff}px)`;
             contentRef.current.style.transition = 'none';
-            // Fade out overlay as user swipes down
             const overlay = document.querySelector('[data-state="open"].fixed.inset-0.z-50.bg-black\\/80') as HTMLElement;
             if (overlay) {
                 const opacity = Math.max(0, 0.8 - (diff / 400));
@@ -66,16 +67,15 @@ export default function ItemDetailSheet({ item, isOpen, onClose }: ItemDetailShe
     const handleTouchEnd = useCallback(() => {
         if (!isDragging) return;
         setIsDragging(false);
-        
+
         const diff = currentYRef.current - startYRef.current;
         const threshold = 100; // px to trigger close
-        
-        // Reset overlay opacity
+
         const overlay = document.querySelector('.fixed.inset-0.z-50.bg-black\\/80') as HTMLElement;
         if (overlay) {
             overlay.style.opacity = '';
         }
-        
+
         if (contentRef.current) {
             if (diff > threshold) {
                 onClose();
@@ -85,7 +85,7 @@ export default function ItemDetailSheet({ item, isOpen, onClose }: ItemDetailShe
             }
         }
     }, [isDragging, onClose]);
-    
+
     if (!item) return null;
 
     return (
@@ -94,42 +94,44 @@ export default function ItemDetailSheet({ item, isOpen, onClose }: ItemDetailShe
                 ref={contentRef}
                 side="bottom"
                 showCloseButton={false}
-                className="h-[88dvh] landscape:h-auto landscape:max-h-[90dvh] sm:h-[85vh] sm:max-w-xl sm:left-1/2 sm:-translate-x-1/2 p-0 overflow-hidden rounded-t-[32px] border-none bg-white focus-visible:ring-0 shadow-2xl"
-                style={{ 
-                    maxHeight: 'calc(100dvh - 40px)'
-                }}
+                className="h-[88dvh] max-h-[calc(100dvh-40px)] sm:h-[75vh] sm:w-full sm:max-w-xl sm:right-auto sm:left-1/2 sm:-translate-x-1/2 sm:rounded-[32px] lg:max-w-[900px] lg:h-auto lg:max-h-[80vh] lg:bottom-auto lg:top-1/2 lg:-translate-y-1/2 lg:rounded-3xl p-0 overflow-hidden rounded-t-[32px] border-none bg-white focus-visible:ring-0 shadow-2xl"
             >
-                <div 
-                    className="h-full flex flex-col overflow-y-auto scrollbar-hide"
+                {/* Drag Handle - mobile/tablet only */}
+                <div
+                    ref={dragRef}
+                    onTouchStart={handleTouchStart}
+                    onTouchMove={handleTouchMove}
+                    onTouchEnd={handleTouchEnd}
+                    className="absolute top-0 left-0 right-0 h-12 z-50 flex items-center justify-center touch-pan-y lg:hidden"
+                    style={{ touchAction: 'pan-y' }}
                 >
-                    {/* Drag Handle with swipe down - mobile only */}
-                    <div 
-                        ref={dragRef}
-                        onTouchStart={handleTouchStart}
-                        onTouchMove={handleTouchMove}
-                        onTouchEnd={handleTouchEnd}
-                        className="absolute top-0 left-0 right-0 h-12 z-50 flex items-center justify-center touch-pan-y sm:hidden"
-                        style={{ touchAction: 'pan-y' }}
-                    >
-                        <div className="w-10 h-1.5 bg-zinc-300 rounded-full" />
-                    </div>
-                    
-                    {/* Drag Handle without swipe - desktop/tablet */}
-                    <div 
-                        className="absolute top-0 left-0 right-0 h-12 z-50 hidden sm:flex items-center justify-center"
-                    >
-                        <div className="w-10 h-1.5 bg-zinc-300 rounded-full" />
-                    </div>
+                    <div className="w-10 h-1.5 bg-zinc-300 rounded-full" />
+                </div>
 
-                    {/* Hero Image */}
-                    <div className="relative w-full h-[45vh] sm:h-[40vh] landscape:h-[30vh] max-h-[400px] landscape:max-h-[200px] bg-gradient-to-br from-muted to-muted/50 shrink-0 pt-8">
+                {/* Close Button */}
+                <button
+                    onClick={onClose}
+                    className="absolute top-4 right-4 lg:top-3 lg:right-3 p-2.5 bg-white/90 backdrop-blur-sm text-foreground rounded-full z-50 shadow-lg active:scale-95"
+                    style={{
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                        WebkitTapHighlightColor: 'transparent'
+                    }}
+                >
+                    <Icon icon={X} size={20} />
+                </button>
+
+                {/* Layout: vertical on mobile, horizontal on lg+ */}
+                <div className="h-full flex flex-col lg:flex-row overflow-y-auto lg:overflow-y-auto scrollbar-hide">
+
+                    {/* Image */}
+                    <div className="relative w-full h-[45vh] sm:h-[40vh] max-h-[400px] bg-gradient-to-br from-muted to-muted/50 shrink-0 pt-8 lg:w-[45%] lg:h-auto lg:min-h-[350px] lg:max-h-none lg:pt-0">
                         {item.image_url ? (
                             <Image
                                 src={item.image_url}
                                 alt={item.title || "Dish"}
                                 fill
                                 priority
-                                sizes="(max-width: 640px) 100vw, 640px"
+                                sizes="(max-width: 1024px) 100vw, 45vw"
                                 className="w-full h-full object-cover"
                             />
                         ) : (
@@ -138,23 +140,12 @@ export default function ItemDetailSheet({ item, isOpen, onClose }: ItemDetailShe
                             </div>
                         )}
 
-                        {/* Gradient overlay at bottom */}
-                        <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-white via-white/30 to-transparent" />
-
-                        {/* Custom Close Button - simplified for Chrome iOS */}
-                        <button
-                            onClick={onClose}
-                            className="absolute top-10 right-5 p-2.5 bg-white text-foreground rounded-full z-50 shadow-lg active:scale-95"
-                            style={{ 
-                                boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                                WebkitTapHighlightColor: 'transparent'
-                            }}
-                        >
-                            <Icon icon={X} size={20} />
-                        </button>
+                        {/* Gradient: bottom on mobile, right edge on desktop */}
+                        <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-white via-white/30 to-transparent lg:hidden" />
+                        <div className="hidden lg:block absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-white/50 to-transparent" />
 
                         {/* Top Badges */}
-                        <div className="absolute top-10 left-5 flex flex-wrap gap-2">
+                        <div className="absolute top-10 left-5 lg:top-4 lg:left-4 flex flex-wrap gap-2">
                             {item.is_new && (
                                 <div className="px-3 py-1.5 bg-gradient-to-r from-yellow-400 to-orange-400 text-white text-[10px] font-bold uppercase tracking-wider rounded-full flex items-center gap-1.5 shadow-lg">
                                     <Icon icon={Sparkles} size={14} /> {ta('new')}
@@ -163,8 +154,8 @@ export default function ItemDetailSheet({ item, isOpen, onClose }: ItemDetailShe
                         </div>
                     </div>
 
-                    {/* Content Section */}
-                    <div className="px-6 py-2 space-y-6 -mt-6 relative">
+                    {/* Content */}
+                    <div className="px-6 py-2 space-y-6 -mt-6 relative lg:flex-1 lg:overflow-y-auto lg:scrollbar-hide lg:mt-0 lg:pt-14 lg:py-8 lg:px-8">
                         {/* Title & Price */}
                         <div className="space-y-4">
                             <div className="flex justify-between items-start gap-4">
@@ -181,7 +172,7 @@ export default function ItemDetailSheet({ item, isOpen, onClose }: ItemDetailShe
                                         )}
                                     </div>
                                 </div>
-                                <div 
+                                <div
                                     className="text-2xl font-bold text-white whitespace-nowrap px-5 py-2.5 rounded-2xl"
                                     style={{ backgroundColor: 'hsl(15 75% 55%)' }}
                                 >
@@ -194,13 +185,13 @@ export default function ItemDetailSheet({ item, isOpen, onClose }: ItemDetailShe
                                 {item.is_spicy && (
                                     <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-red-50 text-red-500 text-sm font-medium">
                                         <Icon icon={Flame} size={16} className="fill-red-500" />
-                                        Spicy
+                                        {ta('spicy')}
                                     </div>
                                 )}
                                 {item.is_vegan && (
                                     <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-500 text-sm font-medium">
                                         <Icon icon={Leaf} size={16} className="fill-emerald-500" />
-                                        Vegan
+                                        {ta('vegan')}
                                     </div>
                                 )}
                             </div>

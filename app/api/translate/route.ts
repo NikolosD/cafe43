@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-// @ts-ignore
+import { createClient } from '@/lib/supabase/server';
+import { cookies } from 'next/headers';
 import { translate } from 'google-translate-api-x';
 
 function toTitleCase(str: string) {
@@ -10,6 +11,14 @@ function toTitleCase(str: string) {
 
 export async function POST(request: Request) {
     try {
+        // Auth check - only admin users can translate
+        const cookieStore = cookies();
+        const supabase = createClient(cookieStore);
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
         const { text, target, source = 'ka', format } = await request.json();
 
         if (!text) {
