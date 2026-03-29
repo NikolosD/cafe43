@@ -2,11 +2,21 @@
 
 import { Link } from '@/lib/navigation';
 import { useTranslations } from 'next-intl';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, Loader2 } from 'lucide-react';
+import { useState } from 'react';
+
+const LANGUAGES = [
+    { code: 'ge', flag: '🇬🇪', name: 'ქართული', sub: 'Georgian' },
+    { code: 'en', flag: '🇺🇸', name: 'English', sub: 'English' },
+    { code: 'ru', flag: '🇷🇺', name: 'Русский', sub: 'Russian' },
+] as const;
 
 export default function LanguageSplashPage() {
+    const [loadingLocale, setLoadingLocale] = useState<string | null>(null);
+
     const handleLocaleSelect = (locale: string) => {
         localStorage.setItem('NEXT_LOCALE', locale);
+        setLoadingLocale(locale);
     };
 
     return (
@@ -25,59 +35,30 @@ export default function LanguageSplashPage() {
                 </div>
 
                 <div className="grid gap-4">
-                    <Link
-                        href="/menu"
-                        locale="ge"
-                        onClick={() => handleLocaleSelect('ge')}
-                        className="group relative flex items-center justify-between p-6 bg-white/80 border border-zinc-200 shadow-md rounded-3xl hover:bg-white hover:shadow-lg transition-all active:scale-[0.98]"
-                    >
-                        <div className="flex items-center gap-4">
-                            <span className="text-3xl">🇬🇪</span>
-                            <div className="text-left">
-                                <p className="font-bold text-lg text-black">ქართული</p>
-                                <p className="text-xs text-zinc-500 font-medium">Georgian</p>
+                    {LANGUAGES.map(({ code, flag, name, sub }) => (
+                        <Link
+                            key={code}
+                            href="/menu"
+                            locale={code}
+                            onClick={() => handleLocaleSelect(code)}
+                            className={`group relative flex items-center justify-between p-6 bg-white/80 border border-zinc-200 shadow-md rounded-3xl hover:bg-white hover:shadow-lg transition-all active:scale-[0.98] ${loadingLocale && loadingLocale !== code ? 'opacity-40 pointer-events-none' : ''}`}
+                        >
+                            <div className="flex items-center gap-4">
+                                <span className="text-3xl">{flag}</span>
+                                <div className="text-left">
+                                    <p className="font-bold text-lg text-black">{name}</p>
+                                    <p className="text-xs text-zinc-500 font-medium">{sub}</p>
+                                </div>
                             </div>
-                        </div>
-                        <div className="w-8 h-8 rounded-full border border-zinc-200 flex items-center justify-center group-hover:bg-black group-hover:text-white transition-colors">
-                            <ChevronRight className="w-5 h-5" />
-                        </div>
-                    </Link>
-
-                    <Link
-                        href="/menu"
-                        locale="en"
-                        onClick={() => handleLocaleSelect('en')}
-                        className="group relative flex items-center justify-between p-6 bg-white/80 border border-zinc-200 shadow-md rounded-3xl hover:bg-white hover:shadow-lg transition-all active:scale-[0.98]"
-                    >
-                        <div className="flex items-center gap-4">
-                            <span className="text-3xl">🇺🇸</span>
-                            <div className="text-left">
-                                <p className="font-bold text-lg text-black">English</p>
-                                <p className="text-xs text-zinc-500 font-medium">English</p>
+                            <div className="w-8 h-8 rounded-full border border-zinc-200 flex items-center justify-center group-hover:bg-black group-hover:text-white transition-colors">
+                                {loadingLocale === code ? (
+                                    <Loader2 className="w-5 h-5 animate-spin" />
+                                ) : (
+                                    <ChevronRight className="w-5 h-5" />
+                                )}
                             </div>
-                        </div>
-                        <div className="w-8 h-8 rounded-full border border-zinc-200 flex items-center justify-center group-hover:bg-black group-hover:text-white transition-colors">
-                            <ChevronRight className="w-5 h-5" />
-                        </div>
-                    </Link>
-
-                    <Link
-                        href="/menu"
-                        locale="ru"
-                        onClick={() => handleLocaleSelect('ru')}
-                        className="group relative flex items-center justify-between p-6 bg-white/80 border border-zinc-200 shadow-md rounded-3xl hover:bg-white hover:shadow-lg transition-all active:scale-[0.98]"
-                    >
-                        <div className="flex items-center gap-4">
-                            <span className="text-3xl">🇷🇺</span>
-                            <div className="text-left">
-                                <p className="font-bold text-lg text-black">Русский</p>
-                                <p className="text-xs text-zinc-500 font-medium">Russian</p>
-                            </div>
-                        </div>
-                        <div className="w-8 h-8 rounded-full border border-zinc-200 flex items-center justify-center group-hover:bg-black group-hover:text-white transition-colors">
-                            <ChevronRight className="w-5 h-5" />
-                        </div>
-                    </Link>
+                        </Link>
+                    ))}
                 </div>
             </div>
         </div>

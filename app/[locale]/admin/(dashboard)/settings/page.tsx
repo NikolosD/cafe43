@@ -7,8 +7,10 @@ export default async function SettingsPage() {
     const cookieStore = cookies();
     const supabase = createClient(cookieStore);
 
-    const settings = await getSettings(supabase);
-    const deliveryLinks = await adminGetAllDeliveryLinks(supabase);
+    const [settings, deliveryLinks] = await Promise.all([
+        getSettings(supabase),
+        adminGetAllDeliveryLinks(supabase),
+    ]);
 
     return <AdminSettings initialSettings={settings} initialDeliveryLinks={deliveryLinks} />;
 }

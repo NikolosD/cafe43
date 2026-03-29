@@ -7,8 +7,10 @@ export default async function AdminItemsPage() {
     const cookieStore = cookies();
     const supabase = createClient(cookieStore);
 
-    const items = await adminGetAllItems(supabase);
-    const categories = await adminGetAllCategories(supabase);
+    const [items, categories] = await Promise.all([
+        adminGetAllItems(supabase),
+        adminGetAllCategories(supabase),
+    ]);
 
     return (
         <div className="space-y-6">

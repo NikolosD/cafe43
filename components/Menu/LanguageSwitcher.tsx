@@ -1,10 +1,11 @@
 'use client';
 
+import { useState } from 'react';
 import { useLocale } from 'next-intl';
 import { usePathname, useRouter } from '@/lib/navigation';
 import { useSearchParams } from 'next/navigation';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Globe, Check } from 'lucide-react';
+import { Globe, Check, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Icon from '@/components/Icon';
 
@@ -19,20 +20,22 @@ export default function LanguageSwitcher() {
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
+    const [loading, setLoading] = useState(false);
 
     const handleChange = (newLocale: string) => {
+        if (newLocale === locale) return;
+        setLoading(true);
         localStorage.setItem('NEXT_LOCALE', newLocale);
         const params = searchParams.toString();
         const targetPath = params ? `${pathname}?${params}` : pathname;
-        // Используем push вместо replace для быстрой навигации
         router.push(targetPath, { locale: newLocale as "ru" | "en" | "ge" });
     };
 
     const currentLang = languages.find(l => l.code === locale);
 
     return (
-        <Select value={locale} onValueChange={handleChange}>
-            <SelectTrigger 
+        <Select value={locale} onValueChange={handleChange} disabled={loading}>
+            <SelectTrigger
                 className={cn(
                     "w-auto min-w-[120px] bg-white border border-black/5",
                     "hover:bg-white hover:border-primary/20 hover:shadow-md",
@@ -42,19 +45,23 @@ export default function LanguageSwitcher() {
             >
                 <div className="flex items-center gap-2">
                     <div className="p-1 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
-                        <Icon icon={Globe} size={14} className="text-primary" />
+                        {loading ? (
+                            <Icon icon={Loader2} size={14} className="text-primary animate-spin" />
+                        ) : (
+                            <Icon icon={Globe} size={14} className="text-primary" />
+                        )}
                     </div>
                     <span className="hidden sm:inline">{currentLang?.label}</span>
                     <span className="sm:hidden">{currentLang?.flag}</span>
                 </div>
             </SelectTrigger>
-            <SelectContent 
-                align="end" 
+            <SelectContent
+                align="end"
                 className="rounded-2xl border-black/5 shadow-xl min-w-[160px] p-2 bg-white"
             >
                 {languages.map((lang) => (
-                    <SelectItem 
-                        key={lang.code} 
+                    <SelectItem
+                        key={lang.code}
                         value={lang.code}
                         className={cn(
                             "rounded-xl cursor-pointer transition-all duration-200 my-1",

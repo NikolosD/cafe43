@@ -124,16 +124,29 @@ export default function ItemDetailSheet({ item, isOpen, onClose }: ItemDetailShe
                 <div className="h-full flex flex-col lg:flex-row overflow-y-auto lg:overflow-y-auto scrollbar-hide">
 
                     {/* Image */}
-                    <div className="relative w-full h-[45vh] sm:h-[40vh] max-h-[400px] bg-gradient-to-br from-muted to-muted/50 shrink-0 pt-8 lg:w-[45%] lg:h-auto lg:min-h-[350px] lg:max-h-none lg:pt-0">
+                    <div className="relative w-full h-[45vh] sm:h-[40vh] max-h-[400px] bg-muted/20 shrink-0 pt-8 lg:w-[45%] lg:h-auto lg:min-h-[350px] lg:max-h-none lg:pt-0 overflow-hidden">
                         {item.image_url ? (
-                            <Image
-                                src={item.image_url}
-                                alt={item.title || "Dish"}
-                                fill
-                                priority
-                                sizes="(max-width: 1024px) 100vw, 45vw"
-                                className="w-full h-full object-cover"
-                            />
+                            <>
+                                {/* Blurred background fill */}
+                                <Image
+                                    src={item.image_url}
+                                    alt=""
+                                    fill
+                                    sizes="1px"
+                                    className="w-full h-full object-cover scale-110 blur-2xl opacity-60"
+                                    aria-hidden
+                                />
+                                {/* Main image */}
+                                <Image
+                                    src={item.image_url}
+                                    alt={item.title || "Dish"}
+                                    fill
+                                    priority
+                                    sizes="(max-width: 1024px) 100vw, 45vw"
+                                    className="w-full h-full object-contain relative z-10"
+                                />
+                            </>
+
                         ) : (
                             <div className="w-full h-full flex items-center justify-center text-muted-foreground/30">
                                 <Icon icon={Sparkles} size={64} />
@@ -141,8 +154,8 @@ export default function ItemDetailSheet({ item, isOpen, onClose }: ItemDetailShe
                         )}
 
                         {/* Gradient: bottom on mobile, right edge on desktop */}
-                        <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-white via-white/30 to-transparent lg:hidden" />
-                        <div className="hidden lg:block absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-white/50 to-transparent" />
+                        <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-white via-white/50 to-transparent lg:hidden z-20" />
+                        <div className="hidden lg:block absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-white/50 to-transparent z-20" />
 
                         {/* Top Badges */}
                         <div className="absolute top-10 left-5 lg:top-4 lg:left-4 flex flex-wrap gap-2">
@@ -155,10 +168,10 @@ export default function ItemDetailSheet({ item, isOpen, onClose }: ItemDetailShe
                     </div>
 
                     {/* Content */}
-                    <div className="px-6 py-2 space-y-6 -mt-6 relative lg:flex-1 lg:overflow-y-auto lg:scrollbar-hide lg:mt-0 lg:pt-14 lg:py-8 lg:px-8">
+                    <div className="px-6 py-2 space-y-6 -mt-6 relative z-30 lg:flex-1 lg:overflow-y-auto lg:scrollbar-hide lg:mt-0 lg:py-8 lg:px-8">
                         {/* Title & Price */}
                         <div className="space-y-4">
-                            <div className="flex justify-between items-start gap-4">
+                            <div className="flex justify-between items-center gap-4">
                                 <div className="space-y-2 flex-1">
                                     <h2 className="text-3xl font-bold tracking-tight text-foreground leading-tight font-display">
                                         {item.title}
@@ -173,7 +186,7 @@ export default function ItemDetailSheet({ item, isOpen, onClose }: ItemDetailShe
                                     </div>
                                 </div>
                                 <div
-                                    className="text-2xl font-bold text-white whitespace-nowrap px-5 py-2.5 rounded-2xl"
+                                    className="text-2xl font-bold text-white whitespace-nowrap px-5 py-2.5 rounded-2xl lg:mr-10"
                                     style={{ backgroundColor: 'hsl(15 75% 55%)' }}
                                 >
                                     {item.price} ₾
