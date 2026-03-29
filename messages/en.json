@@ -3,7 +3,10 @@
         "title": "Menu",
         "search": "Search items...",
         "empty": "No items found",
-        "description": "Description"
+        "description": "Description",
+        "empty_hint": "Try checking back later or explore other categories",
+        "clear_search": "Clear search",
+        "all_rights": "All rights reserved"
     },
     "Admin": {
         "categories": "Categories",
@@ -120,6 +123,9 @@
         "colors": "Colors",
         "gradient": "Gradient",
         "shapes": "Shapes",
-        "error_level": "Precision"
+        "error_level": "Precision",
+        "crop_image": "Crop Image",
+        "zoom": "Zoom",
+        "apply_crop": "Apply Crop"
     }
 }

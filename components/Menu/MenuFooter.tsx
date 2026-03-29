@@ -1,4 +1,7 @@
+'use client';
+
 import { MapPin, Instagram } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 interface MenuFooterProps {
     settings: {
@@ -13,6 +16,7 @@ interface MenuFooterProps {
 }
 
 export default function MenuFooter({ settings, deliveryLinks = {} }: MenuFooterProps) {
+    const t = useTranslations('Menu');
     if (!settings) return null;
 
     const { address, google_maps_url, instagram_url } = settings;
@@ -101,7 +105,7 @@ export default function MenuFooter({ settings, deliveryLinks = {} }: MenuFooterP
                                 Cafe 43
                             </p>
                             <p className="text-[10px] text-muted-foreground/40">
-                                &copy; {new Date().getFullYear()} All rights reserved
+                                &copy; {new Date().getFullYear()} {t('all_rights')}
                             </p>
                         </div>
                     </div>

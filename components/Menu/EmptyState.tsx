@@ -1,12 +1,16 @@
+'use client';
+
 import { SearchX, UtensilsCrossed } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useTranslations } from 'next-intl';
 
 interface EmptyStateProps {
     message?: string;
     onClear?: () => void;
 }
 
-export default function EmptyState({ message = "No dishes found", onClear }: EmptyStateProps) {
+export default function EmptyState({ message, onClear }: EmptyStateProps) {
+    const t = useTranslations('Menu');
     return (
         <div className="flex flex-col items-center justify-center py-20 text-center space-y-6 animate-scale-in">
             <div className="relative">
@@ -16,9 +20,9 @@ export default function EmptyState({ message = "No dishes found", onClear }: Emp
                 </div>
             </div>
             <div className="space-y-2">
-                <p className="text-lg font-medium text-foreground/80">{message}</p>
+                <p className="text-lg font-medium text-foreground/80">{message || t('empty')}</p>
                 <p className="text-sm text-muted-foreground max-w-[200px]">
-                    Try checking back later or explore other categories
+                    {t('empty_hint')}
                 </p>
             </div>
             {onClear && (
@@ -28,7 +32,7 @@ export default function EmptyState({ message = "No dishes found", onClear }: Emp
                     className="rounded-full px-6 border-primary/20 hover:bg-primary/5 hover:border-primary/30 transition-all"
                 >
                     <SearchX className="w-4 h-4 mr-2" />
-                    Clear search
+                    {t('clear_search')}
                 </Button>
             )}
         </div>

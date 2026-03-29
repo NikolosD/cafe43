@@ -17,10 +17,10 @@ const config = {
                 "2xl": "1400px",
             },
         },
-        screens: {
-            'landscape': {'raw': '(orientation: landscape)'},
-        },
         extend: {
+            screens: {
+                'landscape': {'raw': '(orientation: landscape)'},
+            },
             fontFamily: {
                 sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
                 display: ['Manrope', 'Inter', 'system-ui', 'sans-serif'],
