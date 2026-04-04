@@ -21,11 +21,15 @@ function ImageCarousel({ images, title }: { images: string[]; title: string }) {
     const scrollRef = useRef<HTMLDivElement>(null);
     const [activeIndex, setActiveIndex] = useState(0);
 
+    const rafRef = useRef<number>(0);
     const handleScroll = useCallback(() => {
-        const el = scrollRef.current;
-        if (!el) return;
-        const index = Math.round(el.scrollLeft / el.clientWidth);
-        setActiveIndex(index);
+        cancelAnimationFrame(rafRef.current);
+        rafRef.current = requestAnimationFrame(() => {
+            const el = scrollRef.current;
+            if (!el) return;
+            const index = Math.round(el.scrollLeft / el.clientWidth);
+            setActiveIndex(prev => prev !== index ? index : prev);
+        });
     }, []);
 
     const scrollTo = useCallback((index: number) => {

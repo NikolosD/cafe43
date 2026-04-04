@@ -10,7 +10,7 @@ import Script from 'next/script';
 import { Analytics } from "@vercel/analytics/next";
 
 const dmSans = DM_Sans({ subsets: ["latin", "latin-ext"], variable: "--font-body" });
-const cormorant = Cormorant_Garamond({ subsets: ["latin", "latin-ext"], variable: "--font-display", weight: ["300", "400", "500", "600", "700"] });
+const cormorant = Cormorant_Garamond({ subsets: ["latin", "latin-ext"], variable: "--font-display", weight: ["300", "400", "500", "700"] });
 
 export const metadata: Metadata = {
     title: "Cafe 43",

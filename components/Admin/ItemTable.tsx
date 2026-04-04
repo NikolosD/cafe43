@@ -341,12 +341,24 @@ export default function ItemTable({ initialItems, categories }: ItemTableProps) 
         if (!currentId) { alert('Save the item first before adding extra photos.'); return; }
         const file = event.target.files?.[0];
         if (!file) return;
+
+        // Validate MIME type
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+        if (!allowedTypes.includes(file.type)) {
+            alert('Only JPEG, PNG, and WebP images are allowed.');
+            return;
+        }
+        // Validate size (max 10MB before compression)
+        if (file.size > 10 * 1024 * 1024) {
+            alert('Image must be under 10MB.');
+            return;
+        }
+
         setUploadingExtra(true);
         try {
             const fileName = `${crypto.randomUUID()}.jpg`;
-            // Compress
             const options = { maxSizeMB: 0.8, maxWidthOrHeight: 1200, useWebWorker: true };
-            let processedFile: File = new File([file], fileName, { type: file.type });
+            let processedFile: File = new File([file], fileName, { type: 'image/jpeg' });
             try {
                 processedFile = await imageCompression(processedFile, options);
             } catch {}
