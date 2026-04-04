@@ -170,7 +170,7 @@ export default function AdminUsers({ users, currentUserId }: AdminUsersProps) {
                                     value={newPassword}
                                     onChange={(e) => setNewPassword(e.target.value)}
                                     required
-                                    minLength={6}
+                                    minLength={12}
                                 />
                             </div>
                             <div className="space-y-2">

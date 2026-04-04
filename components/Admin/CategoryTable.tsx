@@ -89,33 +89,29 @@ export default function CategoryTable({ initialCategories }: CategoryTableProps)
         const { active, over } = event;
 
         if (over && active.id !== over.id) {
-            setCategories((items) => {
-                const oldIndex = items.findIndex((i) => i.id === active.id);
-                const newIndex = items.findIndex((i) => i.id === over.id);
-                const updated = arrayMove(items, oldIndex, newIndex);
+            const oldIndex = categories.findIndex((i) => i.id === active.id);
+            const newIndex = categories.findIndex((i) => i.id === over.id);
+            const updated = arrayMove(categories, oldIndex, newIndex)
+                .map((cat, index) => ({ ...cat, sort: (index + 1) * 10 }));
 
-                // Persist to DB
-                const persistOrder = async () => {
-                    try {
-                        const updates = updated.map((cat, index) => ({
-                            id: cat.id,
-                            sort: (index + 1) * 10,
-                        }));
+            const prevCategories = categories;
+            setCategories(updated);
 
-                        const { error } = await supabase
-                            .from('categories')
-                            .upsert(updates, { onConflict: 'id' });
+            // Persist to DB outside setState
+            const updates = updated.map((cat, index) => ({
+                id: cat.id,
+                sort: (index + 1) * 10,
+            }));
 
-                        if (error) throw error;
-                    } catch (err) {
+            supabase
+                .from('categories')
+                .upsert(updates, { onConflict: 'id' })
+                .then(({ error }) => {
+                    if (error) {
                         alert('Failed to save order. Rolling back...');
-                        setCategories(items); // Rollback
+                        setCategories(prevCategories);
                     }
-                };
-
-                persistOrder();
-                return updated.map((cat, index) => ({ ...cat, sort: (index + 1) * 10 }));
-            });
+                });
         }
     };
 
@@ -235,7 +231,7 @@ export default function CategoryTable({ initialCategories }: CategoryTableProps)
             }
 
             const fileExt = 'jpg';
-            const fileName = `${Math.random()}.${fileExt}`;
+            const fileName = `${crypto.randomUUID()}.${fileExt}`;
             const filePath = `${fileName}`;
 
             const { error: uploadError } = await supabase.storage
@@ -302,43 +298,26 @@ export default function CategoryTable({ initialCategories }: CategoryTableProps)
             const newTitles = { ...titles };
             const geChanged = titles.ge !== originalTitles.ge;
 
-            if (geChanged) {
-                if (!dirtyFields.has('ru') && (!titles.ru || titles.ru === originalTitles.ru)) {
-                    const res = await fetch('/api/translate', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ text: titles.ge, target: 'ru', format: 'title' }),
-                    }).then(r => r.json());
-                    if (res.text) newTitles.ru = res.text;
-                }
-                if (!dirtyFields.has('en') && (!titles.en || titles.en === originalTitles.en)) {
-                    const res = await fetch('/api/translate', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ text: titles.ge, target: 'en', format: 'title' }),
-                    }).then(r => r.json());
-                    if (res.text) newTitles.en = res.text;
-                }
-            }
-            // Fallback for new items (empty targets)
-            else {
-                if (!newTitles.ru.trim()) {
-                    const res = await fetch('/api/translate', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ text: titles.ge, target: 'ru', format: 'title' }),
-                    }).then(r => r.json());
-                    if (res.text) newTitles.ru = res.text;
-                }
-                if (!newTitles.en.trim()) {
-                    const res = await fetch('/api/translate', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ text: titles.ge, target: 'en', format: 'title' }),
-                    }).then(r => r.json());
-                    if (res.text) newTitles.en = res.text;
-                }
-            }
+            const translateFn = (target: string) =>
+                fetch('/api/translate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: titles.ge, target, format: 'title' }),
+                }).then(r => r.json());
+
+            const needRu = geChanged
+                ? !dirtyFields.has('ru') && (!titles.ru || titles.ru === originalTitles.ru)
+                : !newTitles.ru.trim();
+            const needEn = geChanged
+                ? !dirtyFields.has('en') && (!titles.en || titles.en === originalTitles.en)
+                : !newTitles.en.trim();
+
+            const [ruRes, enRes] = await Promise.all([
+                needRu ? translateFn('ru') : null,
+                needEn ? translateFn('en') : null,
+            ]);
+            if (ruRes?.text) newTitles.ru = ruRes.text;
+            if (enRes?.text) newTitles.en = enRes.text;
 
             setTitles(newTitles);
 

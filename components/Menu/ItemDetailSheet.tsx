@@ -31,10 +31,6 @@ export default function ItemDetailSheet({ item, isOpen, onClose }: ItemDetailShe
         if (isOpen && contentRef.current) {
             contentRef.current.style.transform = '';
             contentRef.current.style.transition = '';
-            const overlay = document.querySelector('.fixed.inset-0.z-50.bg-black\\/80') as HTMLElement;
-            if (overlay) {
-                overlay.style.opacity = '';
-            }
         }
     }, [isOpen]);
 
@@ -56,11 +52,6 @@ export default function ItemDetailSheet({ item, isOpen, onClose }: ItemDetailShe
                 ? `translateX(-50%) translateY(${diff}px)`
                 : `translateY(${diff}px)`;
             contentRef.current.style.transition = 'none';
-            const overlay = document.querySelector('[data-state="open"].fixed.inset-0.z-50.bg-black\\/80') as HTMLElement;
-            if (overlay) {
-                const opacity = Math.max(0, 0.8 - (diff / 400));
-                overlay.style.opacity = String(opacity);
-            }
         }
     }, [isDragging]);
 
@@ -69,15 +60,9 @@ export default function ItemDetailSheet({ item, isOpen, onClose }: ItemDetailShe
         setIsDragging(false);
 
         const diff = currentYRef.current - startYRef.current;
-        const threshold = 100; // px to trigger close
-
-        const overlay = document.querySelector('.fixed.inset-0.z-50.bg-black\\/80') as HTMLElement;
-        if (overlay) {
-            overlay.style.opacity = '';
-        }
 
         if (contentRef.current) {
-            if (diff > threshold) {
+            if (diff > 100) {
                 onClose();
             } else {
                 contentRef.current.style.transition = 'transform 0.3s ease-out';

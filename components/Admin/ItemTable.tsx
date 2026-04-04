@@ -175,33 +175,28 @@ export default function ItemTable({ initialItems, categories }: ItemTableProps) 
         const { active, over } = event;
 
         if (over && active.id !== over.id) {
-            setItems((prevItems) => {
-                const oldIndex = prevItems.findIndex((i) => i.id === active.id);
-                const newIndex = prevItems.findIndex((i) => i.id === over.id);
-                const updated = arrayMove(prevItems, oldIndex, newIndex);
+            const oldIndex = items.findIndex((i) => i.id === active.id);
+            const newIndex = items.findIndex((i) => i.id === over.id);
+            const updated = arrayMove(items, oldIndex, newIndex)
+                .map((item, index) => ({ ...item, sort: (index + 1) * 10 }));
 
-                // Persist to DB
-                const persistOrder = async () => {
-                    try {
-                        const updates = updated.map((item, index) => ({
-                            id: item.id,
-                            sort: (index + 1) * 10,
-                        }));
+            const prevItems = items;
+            setItems(updated);
 
-                        const { error } = await supabase
-                            .from('items')
-                            .upsert(updates, { onConflict: 'id' });
+            const updates = updated.map((item, index) => ({
+                id: item.id,
+                sort: (index + 1) * 10,
+            }));
 
-                        if (error) throw error;
-                    } catch (err) {
+            supabase
+                .from('items')
+                .upsert(updates, { onConflict: 'id' })
+                .then(({ error }) => {
+                    if (error) {
                         alert('Failed to save order. Rolling back...');
-                        setItems(prevItems); // Rollback
+                        setItems(prevItems);
                     }
-                };
-
-                persistOrder();
-                return updated.map((item, index) => ({ ...item, sort: (index + 1) * 10 }));
-            });
+                });
         }
     };
 
@@ -306,7 +301,7 @@ export default function ItemTable({ initialItems, categories }: ItemTableProps) 
             }
 
             const fileExt = 'jpg';
-            const fileName = `${Math.random()}.${fileExt}`;
+            const fileName = `${crypto.randomUUID()}.${fileExt}`;
             const filePath = `${fileName}`;
 
             const { error: uploadError } = await supabase.storage

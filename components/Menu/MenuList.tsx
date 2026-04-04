@@ -33,23 +33,18 @@ export default function MenuList({ menu }: { menu: any[] }) {
         menu.find(c => c.id === activeCategoryId),
         [menu, activeCategoryId]);
 
-    // Optimized navigation with instant scroll
     const handleCategoryClick = useCallback((categoryId: string) => {
         if (isNavigating) return;
-        
         setIsNavigating(true);
-        
-        // Instant scroll before navigation
+
         window.scrollTo(0, 0);
-        
+
         const params = new URLSearchParams(searchParams.toString());
         params.set('category', categoryId);
-        
-        // Use replace for faster navigation, then push to history
         router.push(`${pathname}?${params.toString()}`, { scroll: false });
-        
-        // Reset navigation lock after transition
-        requestAnimationFrame(() => setIsNavigating(false));
+
+        // Reset after a reasonable delay for navigation to complete
+        setTimeout(() => setIsNavigating(false), 500);
     }, [isNavigating, pathname, router, searchParams]);
 
     if (!mounted) {

@@ -28,6 +28,10 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Email and password required' }, { status: 400 });
         }
 
+        if (typeof password !== 'string' || password.length < 12) {
+            return NextResponse.json({ error: 'Password must be at least 12 characters' }, { status: 400 });
+        }
+
         const adminSupabase = createAdminClient();
 
         const { data: authData, error: authError } = await adminSupabase.auth.admin.createUser({

@@ -17,6 +17,8 @@ export default function LanguageSplashPage() {
     const handleLocaleSelect = (locale: string) => {
         localStorage.setItem('NEXT_LOCALE', locale);
         setLoadingLocale(locale);
+        // Reset if navigation takes too long (e.g. network error)
+        setTimeout(() => setLoadingLocale(null), 5000);
     };
 
     return (
