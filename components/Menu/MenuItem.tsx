@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import { cn } from "@/lib/utils";
-import { Sparkles, Scale } from 'lucide-react';
+import { Sparkles, Scale, Flame, Leaf } from 'lucide-react';
 import Icon from '@/components/Icon';
 import { Item } from '@/lib/db';
 import { useTranslations } from 'next-intl';
@@ -56,7 +56,7 @@ export default function MenuItem({ item, onClick }: MenuItemProps) {
                     <h3 className="font-semibold text-[17px] leading-snug text-foreground/90 group-hover:text-foreground transition-colors">
                         {title}
                     </h3>
-                    <span className="font-bold text-[16px] text-primary tabular-nums shrink-0 bg-primary/5 px-2.5 py-1 rounded-lg min-w-[70px] text-center">
+                    <span className="font-bold text-[15px] text-white tabular-nums shrink-0 bg-primary px-2.5 py-1 rounded-xl min-w-[65px] text-center shadow-sm">
                         {Math.floor(price) === price ? price : price.toFixed(2)} ₾
                     </span>
                 </div>
@@ -67,10 +67,28 @@ export default function MenuItem({ item, onClick }: MenuItemProps) {
                     </p>
                 )}
 
-                {weight && (
-                    <div className="flex items-center gap-1 mt-1.5 text-muted-foreground/70">
-                        <Scale className="w-3 h-3" />
-                        <span className="text-[12px] font-medium">{weight}</span>
+                {(weight || item.is_new || item.is_spicy || item.is_vegan) && (
+                    <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+                        {item.is_new && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 text-amber-600 text-[10px] font-bold uppercase tracking-wide">
+                                <Sparkles className="w-2.5 h-2.5" /> {ta('new')}
+                            </span>
+                        )}
+                        {item.is_spicy && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-red-50 text-red-500 text-[10px] font-bold uppercase tracking-wide">
+                                <Flame className="w-2.5 h-2.5" />
+                            </span>
+                        )}
+                        {item.is_vegan && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-500 text-[10px] font-bold uppercase tracking-wide">
+                                <Leaf className="w-2.5 h-2.5" />
+                            </span>
+                        )}
+                        {weight && (
+                            <span className="inline-flex items-center gap-1 text-muted-foreground/60 text-[11px] font-medium">
+                                <Scale className="w-2.5 h-2.5" /> {weight}
+                            </span>
+                        )}
                     </div>
                 )}
 

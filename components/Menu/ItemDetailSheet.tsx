@@ -109,7 +109,7 @@ export default function ItemDetailSheet({ item, isOpen, onClose }: ItemDetailShe
                 <div className="h-full flex flex-col lg:flex-row overflow-y-auto lg:overflow-y-auto scrollbar-hide">
 
                     {/* Image */}
-                    <div className="relative w-full h-[45vh] sm:h-[40vh] max-h-[400px] bg-muted/20 shrink-0 pt-8 lg:w-[45%] lg:h-auto lg:min-h-[350px] lg:max-h-none lg:pt-0 overflow-hidden">
+                    <div className="relative w-full aspect-video max-h-[360px] bg-muted/10 shrink-0 pt-8 lg:w-[45%] lg:h-auto lg:min-h-[350px] lg:max-h-none lg:pt-0 overflow-hidden">
                         {item.image_url ? (
                             <Image
                                 src={item.image_url}
@@ -117,7 +117,7 @@ export default function ItemDetailSheet({ item, isOpen, onClose }: ItemDetailShe
                                 fill
                                 priority
                                 sizes="(max-width: 1024px) 100vw, 45vw"
-                                className="w-full h-full object-contain relative z-10"
+                                className="w-full h-full object-cover"
                             />
                         ) : (
                             <div className="w-full h-full flex items-center justify-center text-muted-foreground/30">
@@ -125,9 +125,9 @@ export default function ItemDetailSheet({ item, isOpen, onClose }: ItemDetailShe
                             </div>
                         )}
 
-                        {/* Gradient: bottom on mobile, right edge on desktop */}
-                        <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-white via-white/50 to-transparent lg:hidden z-20" />
-                        <div className="hidden lg:block absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-white/50 to-transparent z-20" />
+                        {/* Gradient fade into content */}
+                        <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-white to-transparent lg:hidden z-20" />
+                        <div className="hidden lg:block absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-white/60 to-transparent z-20" />
 
                         {/* Top Badges */}
                         <div className="absolute top-10 left-5 lg:top-4 lg:left-4 flex flex-wrap gap-2">
