@@ -24,8 +24,9 @@ export default function LanguageSplashPage() {
 
             <div className="max-w-sm w-full space-y-16 relative z-10">
                 <div className="text-center space-y-4">
-                    <h1 className="text-4xl font-display font-light tracking-[0.2em] uppercase text-foreground/80">
-                        Cafe 43
+                    <h1 className="text-4xl font-display font-light uppercase text-foreground/80">
+                        <span className="tracking-[0.2em]">Cafe</span>{" "}
+                        <span className="tracking-normal">43</span>
                     </h1>
                     <div className="flex items-center justify-center gap-4">
                         <div className="h-px w-10 bg-black/10" />
