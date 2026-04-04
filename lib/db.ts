@@ -10,6 +10,13 @@ export type Category = {
     translations: { title: string; lang: string }[];
 };
 
+export type ItemImage = {
+    id: string;
+    item_id: string;
+    image_url: string;
+    sort: number;
+};
+
 export type Item = {
     id: string;
     category_id: string;
@@ -24,6 +31,7 @@ export type Item = {
     translations: { title: string; description: string | null; lang: string }[];
     title?: string;
     description?: string | null;
+    images?: ItemImage[];
 };
 
 // --- PUBLIC MENU ---
@@ -48,10 +56,11 @@ export async function getPublicMenu(supabase: SupabaseClient, locale: string, ca
             .from('items')
             .select(`
                 *,
-                item_translations(lang, title, description)
+                item_translations(lang, title, description),
+                item_images(id, image_url, sort)
             `)
             .eq('is_active', true)
-            .eq('category_id', categoryId) // Optimize: Filter by category
+            .eq('category_id', categoryId)
             .order('sort', { ascending: true });
 
         if (itemsError) throw itemsError;
@@ -73,6 +82,9 @@ export async function getPublicMenu(supabase: SupabaseClient, locale: string, ca
                 const iTranslations = item.item_translations || [];
                 const iTrans = iTranslations.find((t: any) => t.lang === locale) || iTranslations[0];
 
+                const images = (item.item_images || [])
+                    .sort((a: any, b: any) => a.sort - b.sort);
+
                 return {
                     ...item,
                     title: iTrans?.title || 'Untitled',
@@ -81,6 +93,7 @@ export async function getPublicMenu(supabase: SupabaseClient, locale: string, ca
                     is_new: item.is_new,
                     is_spicy: item.is_spicy,
                     is_vegan: item.is_vegan,
+                    images,
                 };
             }),
         };
@@ -201,6 +214,7 @@ export async function adminGetAllItems(supabase: SupabaseClient) {
         .select(`
       *,
       item_translations(lang, title, description),
+      item_images(id, image_url, sort),
       categories(id, category_translations(lang, title))
     `)
         .order('sort', { ascending: true });
@@ -228,6 +242,44 @@ export async function adminUpsertItem(supabase: SupabaseClient, item: any, trans
     if (transError) throw transError;
 
     return itemData;
+}
+
+// --- ITEM IMAGES ---
+
+export async function adminGetItemImages(supabase: SupabaseClient, itemId: string) {
+    const { data, error } = await supabase
+        .from('item_images')
+        .select('*')
+        .eq('item_id', itemId)
+        .order('sort', { ascending: true });
+
+    if (error) throw error;
+    return data || [];
+}
+
+export async function adminAddItemImage(supabase: SupabaseClient, itemId: string, imageUrl: string, sort: number) {
+    const { data, error } = await supabase
+        .from('item_images')
+        .insert({ item_id: itemId, image_url: imageUrl, sort })
+        .select()
+        .single();
+
+    if (error) throw error;
+    return data;
+}
+
+export async function adminDeleteItemImage(supabase: SupabaseClient, imageId: string) {
+    const { error } = await supabase.from('item_images').delete().eq('id', imageId);
+    if (error) throw error;
+}
+
+export async function adminReorderItemImages(supabase: SupabaseClient, images: { id: string; sort: number }[]) {
+    const updates = images.map(img => ({
+        id: img.id,
+        sort: img.sort,
+    }));
+    const { error } = await supabase.from('item_images').upsert(updates, { onConflict: 'id' });
+    if (error) throw error;
 }
 
 export async function adminDeleteItem(supabase: SupabaseClient, id: string) {

@@ -17,6 +17,70 @@ interface ItemDetailSheetProps {
     onClose: () => void;
 }
 
+function ImageCarousel({ images, title }: { images: string[]; title: string }) {
+    const scrollRef = useRef<HTMLDivElement>(null);
+    const [activeIndex, setActiveIndex] = useState(0);
+
+    const handleScroll = useCallback(() => {
+        const el = scrollRef.current;
+        if (!el) return;
+        const index = Math.round(el.scrollLeft / el.clientWidth);
+        setActiveIndex(index);
+    }, []);
+
+    if (images.length === 0) {
+        return (
+            <div className="w-full aspect-square max-h-[400px] bg-[#f5f5f3] shrink-0 lg:w-[45%] lg:h-auto lg:min-h-[350px] lg:max-h-none flex items-center justify-center text-foreground/10">
+                <Sparkles size={48} />
+            </div>
+        );
+    }
+
+    if (images.length === 1) {
+        return (
+            <div className="relative w-full aspect-square max-h-[400px] bg-[#f5f5f3] shrink-0 lg:w-[45%] lg:h-auto lg:min-h-[350px] lg:max-h-none overflow-hidden">
+                <Image src={images[0]} alt={title} fill priority sizes="(max-width: 1024px) 100vw, 45vw" className="object-cover" />
+            </div>
+        );
+    }
+
+    return (
+        <div className="relative w-full shrink-0 lg:w-[45%] lg:min-h-[350px]">
+            {/* Scrollable images */}
+            <div
+                ref={scrollRef}
+                onScroll={handleScroll}
+                className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide"
+                style={{ WebkitOverflowScrolling: 'touch' }}
+            >
+                {images.map((url, i) => (
+                    <div key={i} className="relative w-full aspect-square max-h-[400px] bg-[#f5f5f3] shrink-0 snap-center lg:max-h-none">
+                        <Image
+                            src={url}
+                            alt={`${title} ${i + 1}`}
+                            fill
+                            priority={i === 0}
+                            sizes="(max-width: 1024px) 100vw, 45vw"
+                            className="object-cover"
+                            loading={i === 0 ? "eager" : "lazy"}
+                        />
+                    </div>
+                ))}
+            </div>
+
+            {/* Dots indicator */}
+            <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-1.5 z-10">
+                {images.map((_, i) => (
+                    <div
+                        key={i}
+                        className={`w-1.5 h-1.5 rounded-full transition-colors ${i === activeIndex ? 'bg-foreground/70' : 'bg-foreground/20'}`}
+                    />
+                ))}
+            </div>
+        </div>
+    );
+}
+
 export default function ItemDetailSheet({ item, isOpen, onClose }: ItemDetailSheetProps) {
     const t = useTranslations('Menu');
     const ta = useTranslations('Admin');
@@ -73,6 +137,11 @@ export default function ItemDetailSheet({ item, isOpen, onClose }: ItemDetailShe
 
     if (!item) return null;
 
+    // Build image list: item_images first, fallback to image_url
+    const allImages: string[] = item.images && item.images.length > 0
+        ? item.images.map(img => img.image_url)
+        : item.image_url ? [item.image_url] : [];
+
     return (
         <Sheet open={isOpen} onOpenChange={onClose}>
             <SheetContent
@@ -104,23 +173,8 @@ export default function ItemDetailSheet({ item, isOpen, onClose }: ItemDetailShe
 
                 <div className="h-full flex flex-col lg:flex-row overflow-y-auto lg:overflow-y-auto scrollbar-hide">
 
-                    {/* Image — clean, no overlay */}
-                    <div className="relative w-full aspect-square max-h-[400px] bg-[#f5f5f3] shrink-0 lg:w-[45%] lg:h-auto lg:min-h-[350px] lg:max-h-none overflow-hidden">
-                        {item.image_url ? (
-                            <Image
-                                src={item.image_url}
-                                alt={item.title || ""}
-                                fill
-                                priority
-                                sizes="(max-width: 1024px) 100vw, 45vw"
-                                className="w-full h-full object-cover"
-                            />
-                        ) : (
-                            <div className="w-full h-full flex items-center justify-center text-foreground/10">
-                                <Icon icon={Sparkles} size={48} />
-                            </div>
-                        )}
-                    </div>
+                    {/* Image carousel — CSS scroll-snap, like Grolet */}
+                    <ImageCarousel images={allImages} title={item.title || ""} />
 
                     {/* Content — like Grolet product page */}
                     <div className="px-6 py-6 space-y-5 lg:flex-1 lg:overflow-y-auto lg:scrollbar-hide lg:py-8 lg:px-8">

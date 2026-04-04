@@ -111,6 +111,10 @@ export default function ItemTable({ initialItems, categories }: ItemTableProps) 
     const [isCropperOpen, setIsCropperOpen] = useState(false);
     const [pendingImage, setPendingImage] = useState<string | null>(null);
 
+    // Multi-image state
+    const [itemImages, setItemImages] = useState<{ id: string; image_url: string; sort: number }[]>([]);
+    const [uploadingExtra, setUploadingExtra] = useState(false);
+
     // Helper to get filename from URL
     const getStoragePath = (url: string | null) => {
         if (!url) return null;
@@ -209,6 +213,7 @@ export default function ItemTable({ initialItems, categories }: ItemTableProps) 
             setIsActive(item.is_active);
             setImageUrl(item.image_url);
             setOriginalImageUrl(item.image_url);
+            setItemImages((item.item_images || []).sort((a: any, b: any) => a.sort - b.sort));
             setWeight(item.weight || '');
             setIsNew(!!item.is_new);
             setIsSpicy(!!item.is_spicy);
@@ -246,6 +251,7 @@ export default function ItemTable({ initialItems, categories }: ItemTableProps) 
             setIsActive(true);
             setImageUrl(null);
             setOriginalImageUrl(null);
+            setItemImages([]);
             setWeight('');
             setIsNew(false);
             setIsSpicy(false);
@@ -324,10 +330,60 @@ export default function ItemTable({ initialItems, categories }: ItemTableProps) 
             setImageUrl(publicUrl);
         } catch (error) {
             alert('Error uploading image!');
-            console.error(error);
         } finally {
             setUploading(false);
             setPendingImage(null);
+        }
+    };
+
+    // Upload additional image to item_images
+    const handleExtraImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        if (!currentId) { alert('Save the item first before adding extra photos.'); return; }
+        const file = event.target.files?.[0];
+        if (!file) return;
+        setUploadingExtra(true);
+        try {
+            const fileName = `${crypto.randomUUID()}.jpg`;
+            // Compress
+            const options = { maxSizeMB: 0.8, maxWidthOrHeight: 1200, useWebWorker: true };
+            let processedFile: File = new File([file], fileName, { type: file.type });
+            try {
+                processedFile = await imageCompression(processedFile, options);
+            } catch {}
+
+            const { error: uploadError } = await supabase.storage
+                .from('menu-images')
+                .upload(fileName, processedFile);
+            if (uploadError) throw uploadError;
+
+            const { data: { publicUrl } } = supabase.storage
+                .from('menu-images')
+                .getPublicUrl(fileName);
+
+            const nextSort = itemImages.length > 0 ? Math.max(...itemImages.map(i => i.sort)) + 10 : 10;
+            const { data: newImg, error: dbError } = await supabase
+                .from('item_images')
+                .insert({ item_id: currentId, image_url: publicUrl, sort: nextSort })
+                .select()
+                .single();
+            if (dbError) throw dbError;
+
+            setItemImages(prev => [...prev, newImg]);
+        } catch {
+            alert('Error uploading extra image');
+        } finally {
+            setUploadingExtra(false);
+            event.target.value = '';
+        }
+    };
+
+    const handleDeleteExtraImage = async (imageId: string, imageUrl: string) => {
+        try {
+            await supabase.from('item_images').delete().eq('id', imageId);
+            await deleteOldImage(imageUrl);
+            setItemImages(prev => prev.filter(i => i.id !== imageId));
+        } catch {
+            alert('Error deleting image');
         }
     };
 
@@ -702,6 +758,35 @@ export default function ItemTable({ initialItems, categories }: ItemTableProps) 
                                     </div>
                                 </label>
                             </div>
+
+                            {/* Extra images gallery */}
+                            {currentId && (
+                                <div className="space-y-2">
+                                    <Label className="block mb-2">Extra Photos ({itemImages.length})</Label>
+                                    <div className="flex flex-wrap gap-2">
+                                        {itemImages.map((img) => (
+                                            <div key={img.id} className="relative w-20 h-20 rounded-lg overflow-hidden bg-zinc-100 ring-1 ring-zinc-200">
+                                                <img src={img.image_url} alt="" className="w-full h-full object-cover" />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleDeleteExtraImage(img.id, img.image_url)}
+                                                    className="absolute top-1 right-1 p-1 bg-black/50 text-white rounded-full hover:bg-black/70"
+                                                >
+                                                    <X className="w-2.5 h-2.5" />
+                                                </button>
+                                            </div>
+                                        ))}
+                                        <label className="w-20 h-20 rounded-lg border-2 border-dashed border-zinc-200 flex items-center justify-center cursor-pointer hover:bg-zinc-50 transition-colors">
+                                            {uploadingExtra ? (
+                                                <span className="text-[10px] text-zinc-400">...</span>
+                                            ) : (
+                                                <span className="text-2xl text-zinc-300">+</span>
+                                            )}
+                                            <input type="file" className="sr-only" accept="image/*" onChange={handleExtraImageUpload} disabled={uploadingExtra} />
+                                        </label>
+                                    </div>
+                                </div>
+                            )}
 
                             <div className="space-y-4 bg-zinc-50 p-4 rounded-lg border border-zinc-100">
                                 <div className="space-y-2">

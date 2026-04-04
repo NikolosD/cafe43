@@ -16,7 +16,7 @@ interface ImageCropperProps {
     isOpen: boolean;
 }
 
-export default function ImageCropper({ image, aspect = 16 / 9, onCropComplete, onCancel, isOpen }: ImageCropperProps) {
+export default function ImageCropper({ image, aspect = 1, onCropComplete, onCancel, isOpen }: ImageCropperProps) {
     const t = useTranslations('Admin');
     const [crop, setCrop] = useState({ x: 0, y: 0 });
     const [zoom, setZoom] = useState(1);
