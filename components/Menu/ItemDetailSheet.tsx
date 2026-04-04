@@ -28,6 +28,20 @@ function ImageCarousel({ images, title }: { images: string[]; title: string }) {
         setActiveIndex(index);
     }, []);
 
+    const scrollTo = useCallback((index: number) => {
+        const el = scrollRef.current;
+        if (!el) return;
+        el.scrollTo({ left: index * el.clientWidth, behavior: 'smooth' });
+    }, []);
+
+    const goPrev = useCallback(() => {
+        scrollTo(activeIndex > 0 ? activeIndex - 1 : images.length - 1);
+    }, [activeIndex, images.length, scrollTo]);
+
+    const goNext = useCallback(() => {
+        scrollTo(activeIndex < images.length - 1 ? activeIndex + 1 : 0);
+    }, [activeIndex, images.length, scrollTo]);
+
     if (images.length === 0) {
         return (
             <div className="w-full aspect-square max-h-[400px] bg-[#f5f5f3] shrink-0 lg:w-[45%] lg:h-auto lg:min-h-[350px] lg:max-h-none flex items-center justify-center text-foreground/10">
@@ -45,7 +59,7 @@ function ImageCarousel({ images, title }: { images: string[]; title: string }) {
     }
 
     return (
-        <div className="relative w-full shrink-0 lg:w-[45%] lg:min-h-[350px]">
+        <div className="relative w-full shrink-0 lg:w-[45%] lg:min-h-[350px] group">
             {/* Scrollable images */}
             <div
                 ref={scrollRef}
@@ -68,12 +82,34 @@ function ImageCarousel({ images, title }: { images: string[]; title: string }) {
                 ))}
             </div>
 
+            {/* Prev/Next arrows — always visible, loop around */}
+            <button
+                onClick={goPrev}
+                className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/80 flex items-center justify-center z-10 active:scale-90 transition-transform shadow-sm"
+                aria-label="Previous"
+            >
+                <svg viewBox="0 0 100 100" className="w-4 h-4">
+                    <path d="M 65,10 L 25,50 L 65,90" fill="none" stroke="currentColor" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+            </button>
+            <button
+                onClick={goNext}
+                className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/80 flex items-center justify-center z-10 active:scale-90 transition-transform shadow-sm"
+                aria-label="Next"
+            >
+                <svg viewBox="0 0 100 100" className="w-4 h-4">
+                    <path d="M 35,10 L 75,50 L 35,90" fill="none" stroke="currentColor" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+            </button>
+
             {/* Dots indicator */}
             <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-1.5 z-10">
                 {images.map((_, i) => (
-                    <div
+                    <button
                         key={i}
+                        onClick={() => scrollTo(i)}
                         className={`w-1.5 h-1.5 rounded-full transition-colors ${i === activeIndex ? 'bg-foreground/70' : 'bg-foreground/20'}`}
+                        aria-label={`Photo ${i + 1}`}
                     />
                 ))}
             </div>
