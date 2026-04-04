@@ -30,16 +30,7 @@ export default async function MenuPage({
 
     return (
         <ErrorBoundary>
-            <div className="min-h-screen bg-[#faf9f7] flex flex-col relative menu-root" style={{ minHeight: '100dvh' }}>
-                <div className="fixed inset-0 pointer-events-none menu-bg">
-                    {/* Optimized Mobile Background */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.02] via-transparent to-accent/[0.02]" />
-
-                    {/* Heavy Blurs - Desktop Only */}
-                    <div className="hidden sm:block absolute -top-40 -right-40 w-80 h-80 rounded-full bg-primary/5 blur-3xl" />
-                    <div className="hidden sm:block absolute top-1/3 -left-20 w-60 h-60 rounded-full bg-accent/5 blur-3xl" />
-                    <div className="hidden sm:block absolute bottom-20 right-10 w-40 h-40 rounded-full bg-primary/5 blur-2xl" />
-                </div>
+            <div className="min-h-screen bg-white flex flex-col relative menu-root" style={{ minHeight: '100dvh' }}>
 
                 <MenuHeader />
 

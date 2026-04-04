@@ -11,7 +11,7 @@ interface MenuHeaderProps {
 export default function MenuHeader({ restaurantName = "Cafe 43" }: MenuHeaderProps) {
     return (
         <header className="sticky top-0 z-50 w-full chrome-ios-header">
-            <div className="absolute inset-0 bg-[#faf9f7]/95 border-b border-black/[0.04]" />
+            <div className="absolute inset-0 bg-white border-b border-black/[0.06]" />
 
             <div className="container max-w-3xl mx-auto flex h-14 sm:h-16 items-center justify-between px-4 relative">
                 <Link href="/" className="relative z-10">

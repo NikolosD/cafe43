@@ -83,45 +83,30 @@ export default function MenuList({ menu }: { menu: any[] }) {
                                     e.preventDefault();
                                     handleCategoryClick(category.id);
                                 }}
-                                className="group relative flex h-32 sm:h-44 w-full bg-white rounded-[2rem] sm:rounded-[2.5rem] overflow-hidden shadow-sm border border-black/[0.03] transition-shadow hover:shadow-md active:scale-[0.98]"
+                                className="group relative w-full overflow-hidden active:scale-[0.99] transition-transform"
                             >
-                                {/* Content Area */}
-                                <div className="flex-[1.1] flex flex-col justify-center px-6 sm:px-10 text-left z-10 transition-colors">
-                                    <div className="flex items-center gap-2.5 mb-2.5">
-                                        <div className="p-2 rounded-xl bg-primary/8 text-primary/80">
-                                            <Icon
-                                                icon={getCategoryIcon(category.title, category.icon)}
-                                                size={20}
-                                                strokeWidth={1.5}
-                                            />
-                                        </div>
-                                    </div>
-                                    <h3 className="text-zinc-900 font-extrabold text-xl sm:text-3xl leading-[1.1] sm:leading-none uppercase tracking-tighter">
-                                        {category.title}
-                                    </h3>
+                                {/* Image — full width, generous height */}
+                                <div className="relative w-full aspect-[16/10] bg-[#f5f5f3] overflow-hidden rounded-lg">
+                                    {category.image_url ? (
+                                        <Image
+                                            src={category.image_url}
+                                            alt={category.title || "Category"}
+                                            fill
+                                            priority={index < 4}
+                                            sizes="(max-width: 768px) 100vw, 50vw"
+                                            className="object-cover"
+                                            loading={index < 4 ? "eager" : "lazy"}
+                                        />
+                                    ) : (
+                                        <div className="absolute inset-0 bg-[#f0ede8]" />
+                                    )}
                                 </div>
 
-                                {/* Image Area */}
-                                <div className="relative flex-1 h-full overflow-hidden">
-                                    {category.image_url ? (
-                                        <div className="absolute inset-0 w-full h-full">
-                                            <Image
-                                                src={category.image_url}
-                                                alt={category.title || "Category"}
-                                                fill
-                                                priority={index < 4}
-                                                sizes="(max-width: 768px) 50vw, 33vw"
-                                                className="object-cover"
-                                                loading={index < 4 ? "eager" : "lazy"}
-                                            />
-                                            {/* Refined Smooth Gradient Fade */}
-                                            <div className="absolute inset-y-0 left-0 w-32 sm:w-48 bg-gradient-to-r from-white via-white/80 to-transparent z-10" />
-                                        </div>
-                                    ) : (
-                                        <div className="absolute inset-0 flex items-center justify-center bg-zinc-50 text-zinc-200">
-                                            <Search className="w-8 sm:w-12 h-8 sm:h-12 opacity-10" />
-                                        </div>
-                                    )}
+                                {/* Title below image — clean, like Grolet */}
+                                <div className="pt-3 pb-2">
+                                    <h3 className="text-foreground/80 font-display text-lg sm:text-xl font-light tracking-wide uppercase text-center">
+                                        {category.title}
+                                    </h3>
                                 </div>
                             </Link>
                         ))}

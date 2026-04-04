@@ -93,120 +93,75 @@ export default function ItemDetailSheet({ item, isOpen, onClose }: ItemDetailShe
                     <div className="w-10 h-1.5 bg-zinc-300 rounded-full" />
                 </div>
 
-                {/* Close Button */}
+                {/* Close — simple X like Grolet */}
                 <button
                     onClick={onClose}
-                    className="absolute top-4 right-4 lg:top-3 lg:right-3 p-2.5 bg-white/90 backdrop-blur-sm text-foreground rounded-full z-50 shadow-lg active:scale-95"
-                    style={{
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                        WebkitTapHighlightColor: 'transparent'
-                    }}
+                    className="absolute top-4 right-4 lg:top-3 lg:right-3 p-2 z-50 active:scale-95 text-foreground/60 hover:text-foreground transition-colors"
+                    style={{ WebkitTapHighlightColor: 'transparent' }}
                 >
-                    <Icon icon={X} size={20} />
+                    <Icon icon={X} size={18} strokeWidth={1.5} />
                 </button>
 
-                {/* Layout: vertical on mobile, horizontal on lg+ */}
                 <div className="h-full flex flex-col lg:flex-row overflow-y-auto lg:overflow-y-auto scrollbar-hide">
 
-                    {/* Image */}
-                    <div className="relative w-full aspect-video max-h-[360px] bg-muted/10 shrink-0 pt-8 lg:w-[45%] lg:h-auto lg:min-h-[350px] lg:max-h-none lg:pt-0 overflow-hidden">
+                    {/* Image — clean, no overlay */}
+                    <div className="relative w-full aspect-square max-h-[400px] bg-[#f5f5f3] shrink-0 lg:w-[45%] lg:h-auto lg:min-h-[350px] lg:max-h-none overflow-hidden">
                         {item.image_url ? (
                             <Image
                                 src={item.image_url}
-                                alt={item.title || "Dish"}
+                                alt={item.title || ""}
                                 fill
                                 priority
                                 sizes="(max-width: 1024px) 100vw, 45vw"
                                 className="w-full h-full object-cover"
                             />
                         ) : (
-                            <div className="w-full h-full flex items-center justify-center text-muted-foreground/30">
-                                <Icon icon={Sparkles} size={64} />
+                            <div className="w-full h-full flex items-center justify-center text-foreground/10">
+                                <Icon icon={Sparkles} size={48} />
                             </div>
                         )}
-
-                        {/* Gradient fade into content */}
-                        <div className="absolute inset-x-0 bottom-0 h-6 bg-gradient-to-t from-white/30 to-transparent lg:hidden z-20" />
-                        <div className="hidden lg:block absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-white/60 to-transparent z-20" />
-
-                        {/* Top Badges */}
-                        <div className="absolute top-10 left-5 lg:top-4 lg:left-4 flex flex-wrap gap-2">
-                            {item.is_new && (
-                                <div className="px-3 py-1.5 bg-gradient-to-r from-yellow-400 to-orange-400 text-white text-[10px] font-bold uppercase tracking-wider rounded-full flex items-center gap-1.5 shadow-lg">
-                                    <Icon icon={Sparkles} size={14} /> {ta('new')}
-                                </div>
-                            )}
-                        </div>
                     </div>
 
-                    {/* Content */}
-                    <div className="px-6 py-2 space-y-6 -mt-6 relative z-30 lg:flex-1 lg:overflow-y-auto lg:scrollbar-hide lg:mt-0 lg:py-8 lg:px-8">
-                        {/* Title & Price */}
-                        <div className="space-y-4">
-                            <div className="flex justify-between items-center gap-4">
-                                <div className="space-y-2 flex-1">
-                                    <h2 className="text-3xl font-bold tracking-tight text-foreground leading-tight font-display">
-                                        {item.title}
-                                    </h2>
-                                    <div className="flex items-center gap-3 flex-wrap">
-                                        {item.weight && (
-                                            <div className="flex items-center gap-1.5 text-muted-foreground text-sm font-medium bg-muted/50 px-2.5 py-1 rounded-lg">
-                                                <Icon icon={Scale} size={16} className="text-primary" />
-                                                {item.weight}
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                                <div
-                                    className="text-2xl font-bold text-white whitespace-nowrap px-5 py-2.5 rounded-2xl lg:mr-10 bg-primary"
-                                >
-                                    {Math.floor(item.price) === item.price ? item.price : item.price.toFixed(2)} ₾
-                                </div>
-                            </div>
-
-                            {/* Icons row */}
-                            <div className="flex gap-3">
-                                {item.is_spicy && (
-                                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-red-50 text-red-500 text-sm font-medium">
-                                        <Icon icon={Flame} size={16} className="fill-red-500" />
-                                        {ta('spicy')}
-                                    </div>
-                                )}
-                                {item.is_vegan && (
-                                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-500 text-sm font-medium">
-                                        <Icon icon={Leaf} size={16} className="fill-emerald-500" />
-                                        {ta('vegan')}
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Divider */}
-                        <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+                    {/* Content — like Grolet product page */}
+                    <div className="px-6 py-6 space-y-5 lg:flex-1 lg:overflow-y-auto lg:scrollbar-hide lg:py-8 lg:px-8">
+                        {/* Title */}
+                        <h2 className="text-xl font-display font-normal tracking-tight text-foreground leading-snug pr-8">
+                            {item.title}
+                        </h2>
 
                         {/* Description */}
                         {item.description && (
-                            <div className="space-y-3">
-                                <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground/70 flex items-center gap-2">
-                                    <span className="w-4 h-px bg-primary/50" />
-                                    {t('description')}
-                                    <span className="w-4 h-px bg-primary/50" />
-                                </h3>
-                                <p className="text-foreground/80 leading-relaxed text-lg">
-                                    {item.description}
-                                </p>
-                            </div>
+                            <p className="text-[13px] leading-relaxed text-foreground/50">
+                                {item.description}
+                            </p>
                         )}
 
-                        {/* Status Badges */}
+                        {/* Meta: weight, badges */}
+                        {(item.weight || item.is_spicy || item.is_vegan) && (
+                            <p className="text-[12px] text-foreground/30">
+                                {[
+                                    item.weight,
+                                    item.is_spicy && ta('spicy'),
+                                    item.is_vegan && ta('vegan'),
+                                ].filter(Boolean).join(' — ')}
+                            </p>
+                        )}
+
+                        {/* Price — prominent, like Grolet's €18.00 */}
+                        <div className="pt-2 border-t border-black/[0.06]">
+                            <span className="text-[17px] font-medium text-foreground tabular-nums">
+                                {Math.floor(item.price) === item.price ? item.price : item.price.toFixed(2)} ₾
+                            </span>
+                        </div>
+
+                        {/* Sold out */}
                         {!item.is_active && (
-                            <div className="mt-8 p-4 bg-muted rounded-2xl text-center font-bold text-muted-foreground uppercase tracking-widest border-2 border-dashed border-muted-foreground/20">
+                            <p className="text-[12px] uppercase tracking-widest text-foreground/30 pt-2">
                                 {ta('sold_out')}
-                            </div>
+                            </p>
                         )}
 
-                        {/* Bottom spacing */}
-                        <div className="h-8" />
+                        <div className="h-6" />
                     </div>
                 </div>
             </SheetContent>
