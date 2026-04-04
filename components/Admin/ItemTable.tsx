@@ -490,8 +490,6 @@ export default function ItemTable({ initialItems, categories }: ItemTableProps) 
                 is_vegan: isVegan
             };
 
-            if (currentId) (itemData as any).id = currentId;
-
             const translations = [
                 { lang: 'ru', title: newTitles.ru, description: newDescriptions.ru },
                 { lang: 'en', title: newTitles.en, description: newDescriptions.en },

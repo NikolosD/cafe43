@@ -22,6 +22,7 @@ export default function CategoryStickyHeader({ categoryTitle, icon }: CategorySt
                         prefetch={true}
                         scroll={false}
                         onClick={handleBackClick}
+                        aria-label="Back"
                         className="p-1.5 hover:bg-black/[0.03] rounded-full transition-colors active:scale-95 flex items-center justify-center"
                     >
                         <svg

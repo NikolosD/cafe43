@@ -2,7 +2,7 @@
 
 import { Link } from '@/lib/navigation';
 import { ChevronRight, Loader2 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 const LANGUAGES = [
     { code: 'ge', flagCode: 'ge', name: 'ქართული', sub: 'Georgian' },
@@ -12,11 +12,17 @@ const LANGUAGES = [
 
 export default function LanguageSplashPage() {
     const [loadingLocale, setLoadingLocale] = useState<string | null>(null);
+    const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    useEffect(() => {
+        return () => { if (timeoutRef.current) clearTimeout(timeoutRef.current); };
+    }, []);
 
     const handleLocaleSelect = (locale: string) => {
-        localStorage.setItem('NEXT_LOCALE', locale);
+        if (typeof window !== 'undefined') localStorage.setItem('NEXT_LOCALE', locale);
         setLoadingLocale(locale);
-        setTimeout(() => setLoadingLocale(null), 5000);
+        if (timeoutRef.current) clearTimeout(timeoutRef.current);
+        timeoutRef.current = setTimeout(() => setLoadingLocale(null), 5000);
     };
 
     return (

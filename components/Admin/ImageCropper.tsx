@@ -80,8 +80,8 @@ export default function ImageCropper({ image, aspect = 1, onCropComplete, onCanc
         try {
             const croppedBlob = await getCroppedImg(image, croppedAreaPixels);
             onCropComplete(croppedBlob);
-        } catch (e) {
-            console.error(e);
+        } catch {
+            alert('Failed to crop image');
         }
     };
 

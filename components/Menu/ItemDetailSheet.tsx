@@ -72,7 +72,7 @@ function ImageCarousel({ images, title }: { images: string[]; title: string }) {
                 style={{ WebkitOverflowScrolling: 'touch' }}
             >
                 {images.map((url, i) => (
-                    <div key={i} className="relative w-full aspect-square max-h-[400px] bg-[#f5f5f3] shrink-0 snap-center lg:max-h-none">
+                    <div key={url} className="relative w-full aspect-square max-h-[400px] bg-[#f5f5f3] shrink-0 snap-center lg:max-h-none">
                         <Image
                             src={url}
                             alt={`${title} ${i + 1}`}
@@ -92,7 +92,7 @@ function ImageCarousel({ images, title }: { images: string[]; title: string }) {
                 className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/80 flex items-center justify-center z-10 active:scale-90 transition-transform shadow-sm"
                 aria-label="Previous"
             >
-                <svg viewBox="0 0 100 100" className="w-4 h-4">
+                <svg viewBox="0 0 100 100" className="w-4 h-4" aria-hidden="true">
                     <path d="M 65,10 L 25,50 L 65,90" fill="none" stroke="currentColor" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
             </button>
@@ -101,16 +101,16 @@ function ImageCarousel({ images, title }: { images: string[]; title: string }) {
                 className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/80 flex items-center justify-center z-10 active:scale-90 transition-transform shadow-sm"
                 aria-label="Next"
             >
-                <svg viewBox="0 0 100 100" className="w-4 h-4">
+                <svg viewBox="0 0 100 100" className="w-4 h-4" aria-hidden="true">
                     <path d="M 35,10 L 75,50 L 35,90" fill="none" stroke="currentColor" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
             </button>
 
             {/* Dots indicator */}
             <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-1.5 z-10">
-                {images.map((_, i) => (
+                {images.map((url, i) => (
                     <button
-                        key={i}
+                        key={url}
                         onClick={() => scrollTo(i)}
                         className={`w-1.5 h-1.5 rounded-full transition-colors ${i === activeIndex ? 'bg-foreground/70' : 'bg-foreground/20'}`}
                         aria-label={`Photo ${i + 1}`}
