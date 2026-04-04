@@ -126,27 +126,14 @@ export default function ItemDetailSheet({ item, isOpen, onClose }: ItemDetailShe
                     {/* Image */}
                     <div className="relative w-full h-[45vh] sm:h-[40vh] max-h-[400px] bg-muted/20 shrink-0 pt-8 lg:w-[45%] lg:h-auto lg:min-h-[350px] lg:max-h-none lg:pt-0 overflow-hidden">
                         {item.image_url ? (
-                            <>
-                                {/* Blurred background fill */}
-                                <Image
-                                    src={item.image_url}
-                                    alt=""
-                                    fill
-                                    sizes="1px"
-                                    className="w-full h-full object-cover scale-110 blur-2xl opacity-60"
-                                    aria-hidden
-                                />
-                                {/* Main image */}
-                                <Image
-                                    src={item.image_url}
-                                    alt={item.title || "Dish"}
-                                    fill
-                                    priority
-                                    sizes="(max-width: 1024px) 100vw, 45vw"
-                                    className="w-full h-full object-contain relative z-10"
-                                />
-                            </>
-
+                            <Image
+                                src={item.image_url}
+                                alt={item.title || "Dish"}
+                                fill
+                                priority
+                                sizes="(max-width: 1024px) 100vw, 45vw"
+                                className="w-full h-full object-contain relative z-10"
+                            />
                         ) : (
                             <div className="w-full h-full flex items-center justify-center text-muted-foreground/30">
                                 <Icon icon={Sparkles} size={64} />
