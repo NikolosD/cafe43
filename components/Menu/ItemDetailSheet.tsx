@@ -173,10 +173,11 @@ export default function ItemDetailSheet({ item, isOpen, onClose }: ItemDetailShe
 
     if (!item) return null;
 
-    // Build image list: item_images first, fallback to image_url
-    const allImages: string[] = item.images && item.images.length > 0
-        ? item.images.map(img => img.image_url)
-        : item.image_url ? [item.image_url] : [];
+    // Build image list: main photo first, then extra images
+    const allImages: string[] = [
+        ...(item.image_url ? [item.image_url] : []),
+        ...(item.images || []).map(img => img.image_url),
+    ];
 
     return (
         <Sheet open={isOpen} onOpenChange={onClose}>
