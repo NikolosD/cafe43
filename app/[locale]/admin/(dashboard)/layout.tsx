@@ -12,6 +12,24 @@ export default async function DashboardLayout({
     children: React.ReactNode;
     params: { locale: string };
 }) {
+    const cookieStore = cookies();
+    const supabase = createClient(cookieStore);
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+        redirect(`/${locale}/admin/login`);
+    }
+
+    const { data: role } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id)
+        .single();
+
+    if (!role || (role.role !== 'admin' && role.role !== 'superadmin')) {
+        redirect(`/${locale}/menu`);
+    }
+
     return (
         <>
             <AdminHeader />

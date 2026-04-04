@@ -92,11 +92,11 @@ export default function MenuList({ menu }: { menu: any[] }) {
                             >
                                 {/* Content Area */}
                                 <div className="flex-[1.1] flex flex-col justify-center px-6 sm:px-10 text-left z-10 transition-colors">
-                                    <div className="flex items-center gap-3 mb-2">
-                                        <div className="p-2.5 rounded-xl bg-gradient-to-br from-primary/10 via-primary/5 to-accent/10 text-primary shadow-sm border border-primary/10">
+                                    <div className="flex items-center gap-2.5 mb-2.5">
+                                        <div className="p-2 rounded-xl bg-primary/8 text-primary/80">
                                             <Icon
                                                 icon={getCategoryIcon(category.title, category.icon)}
-                                                size={24}
+                                                size={20}
                                                 strokeWidth={1.5}
                                             />
                                         </div>

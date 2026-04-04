@@ -96,7 +96,7 @@ export async function getSettings(supabase: SupabaseClient) {
         .single();
 
     if (error && error.code !== 'PGRST116') { // PGRST116 is "no rows returned"
-        console.error('Error fetching settings:', error);
+        // Settings query error — non-critical, return null
     }
     return data || null;
 }
@@ -108,7 +108,7 @@ export async function getDeliveryLinks(supabase: SupabaseClient, locale: string)
         .eq('lang', locale);
 
     if (error) {
-        console.error('Error fetching delivery links:', error);
+        // Delivery links query error — non-critical, return empty
         return {};
     }
 
@@ -245,7 +245,7 @@ export async function getUserRole(supabase: SupabaseClient, userId: string) {
         .single();
 
     if (error && error.code !== 'PGRST116') {
-        console.error('Error fetching user role:', error);
+        // User role query error — non-critical
     }
     return data;
 }

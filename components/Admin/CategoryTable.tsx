@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useLocale } from 'next-intl';
 import { createClient } from '@/lib/supabase/client';
 import { adminUpsertCategory, adminDeleteCategory } from '@/lib/db';
@@ -67,7 +67,7 @@ interface CategoryTableProps {
 export default function CategoryTable({ initialCategories }: CategoryTableProps) {
     const t = useTranslations('Admin');
     const locale = useLocale();
-    const supabase = createClient();
+    const supabase = useMemo(() => createClient(), []);
     const router = useRouter();
     const [categories, setCategories] = useState(initialCategories);
 
@@ -107,9 +107,7 @@ export default function CategoryTable({ initialCategories }: CategoryTableProps)
                             .upsert(updates, { onConflict: 'id' });
 
                         if (error) throw error;
-                        console.log('Order updated');
                     } catch (err) {
-                        console.error('Failed to save order:', err);
                         alert('Failed to save order. Rolling back...');
                         setCategories(items); // Rollback
                     }
@@ -276,6 +274,7 @@ export default function CategoryTable({ initialCategories }: CategoryTableProps)
         try {
             const res = await fetch('/api/translate', {
                 method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ text: titles.ge, target, format: 'title' }),
             }).then(r => r.json());
 
@@ -307,6 +306,7 @@ export default function CategoryTable({ initialCategories }: CategoryTableProps)
                 if (!dirtyFields.has('ru') && (!titles.ru || titles.ru === originalTitles.ru)) {
                     const res = await fetch('/api/translate', {
                         method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ text: titles.ge, target: 'ru', format: 'title' }),
                     }).then(r => r.json());
                     if (res.text) newTitles.ru = res.text;
@@ -314,6 +314,7 @@ export default function CategoryTable({ initialCategories }: CategoryTableProps)
                 if (!dirtyFields.has('en') && (!titles.en || titles.en === originalTitles.en)) {
                     const res = await fetch('/api/translate', {
                         method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ text: titles.ge, target: 'en', format: 'title' }),
                     }).then(r => r.json());
                     if (res.text) newTitles.en = res.text;
@@ -324,6 +325,7 @@ export default function CategoryTable({ initialCategories }: CategoryTableProps)
                 if (!newTitles.ru.trim()) {
                     const res = await fetch('/api/translate', {
                         method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ text: titles.ge, target: 'ru', format: 'title' }),
                     }).then(r => r.json());
                     if (res.text) newTitles.ru = res.text;
@@ -331,6 +333,7 @@ export default function CategoryTable({ initialCategories }: CategoryTableProps)
                 if (!newTitles.en.trim()) {
                     const res = await fetch('/api/translate', {
                         method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ text: titles.ge, target: 'en', format: 'title' }),
                     }).then(r => r.json());
                     if (res.text) newTitles.en = res.text;

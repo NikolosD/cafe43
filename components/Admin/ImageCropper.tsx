@@ -67,9 +67,10 @@ export default function ImageCropper({ image, aspect = 16 / 9, onCropComplete, o
             pixelCrop.height
         );
 
-        return new Promise((resolve) => {
+        return new Promise<Blob>((resolve, reject) => {
             canvas.toBlob((blob) => {
                 if (blob) resolve(blob);
+                else reject(new Error('Failed to create image blob'));
             }, 'image/jpeg', 0.9);
         });
     };

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { adminUpdateSettings, adminUpdateDeliveryLink } from '@/lib/db';
 import { Button } from '@/components/ui/button';
@@ -33,7 +33,7 @@ const LANGUAGES = [
 
 export default function AdminSettings({ initialSettings, initialDeliveryLinks }: AdminSettingsProps) {
     const t = useTranslations('Admin');
-    const supabase = createClient();
+    const supabase = useMemo(() => createClient(), []);
     const [loading, setLoading] = useState(false);
     const [settings, setSettings] = useState(initialSettings || {
         address: '',

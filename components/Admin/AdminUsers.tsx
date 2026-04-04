@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -47,7 +47,7 @@ interface AdminUsersProps {
 
 export default function AdminUsers({ users, currentUserId }: AdminUsersProps) {
     const t = useTranslations('Admin');
-    const supabase = createClient();
+    const supabase = useMemo(() => createClient(), []);
     const [loading, setLoading] = useState(false);
     const [userList, setUserList] = useState<UserRole[]>(users);
     const [isDialogOpen, setIsDialogOpen] = useState(false);

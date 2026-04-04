@@ -13,7 +13,7 @@ import {
     SheetTrigger,
     SheetClose
 } from "@/components/ui/sheet";
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
@@ -24,7 +24,7 @@ export default function AdminHeader() {
     const t = useTranslations('Admin');
     const pathname = usePathname();
     const router = useRouter();
-    const supabase = createClient();
+    const supabase = useMemo(() => createClient(), []);
     const [open, setOpen] = useState(false);
     const [isSuperAdmin, setIsSuperAdmin] = useState(false);
 

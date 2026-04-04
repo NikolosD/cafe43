@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { Link } from '@/lib/navigation';
 import LanguageSwitcher from './LanguageSwitcher';
 import { Settings } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { getUserRole } from '@/lib/db';
 
@@ -14,25 +14,18 @@ interface MenuHeaderProps {
 
 export default function MenuHeader({ restaurantName = "Cafe 43" }: MenuHeaderProps) {
     const [isAdmin, setIsAdmin] = useState(false);
-    const supabase = createClient();
+    const supabase = useMemo(() => createClient(), []);
 
     useEffect(() => {
         const checkAuth = async () => {
-            console.log('[MenuHeader] Checking auth...');
-            const { data: { user }, error } = await supabase.auth.getUser();
-            console.log('[MenuHeader] User:', user, 'Error:', error);
-            
+            const { data: { user } } = await supabase.auth.getUser();
             if (user) {
-                console.log('[MenuHeader] User ID:', user.id);
                 try {
                     const role = await getUserRole(supabase, user.id);
-                    console.log('[MenuHeader] Role:', role);
-                    setIsAdmin(!!role);
-                } catch (e) {
-                    console.error('[MenuHeader] Error getting role:', e);
+                    setIsAdmin(role?.role === 'admin' || role?.role === 'superadmin');
+                } catch {
+                    // User doesn't have admin role
                 }
-            } else {
-                console.log('[MenuHeader] No user found');
             }
         };
         checkAuth();
@@ -40,11 +33,7 @@ export default function MenuHeader({ restaurantName = "Cafe 43" }: MenuHeaderPro
 
     return (
         <header className="sticky top-0 z-50 w-full chrome-ios-header">
-            {/* Glassmorphism background - simplified for Chrome iOS */}
-            <div className="absolute inset-0 bg-white/95 border-b border-black/5" />
-            
-            {/* Gradient overlay - disabled on mobile */}
-            <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-accent/5 hidden sm:block" />
+            <div className="absolute inset-0 bg-[#faf9f7]/95 border-b border-black/[0.04]" />
             
             <div className="container max-w-3xl mx-auto flex h-14 sm:h-16 items-center justify-between px-4 relative">
                 <Link href="/" className="relative z-10 group">

@@ -1,7 +1,7 @@
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Manrope } from "next/font/google";
 import "@/app/globals.css";
 import LocaleInitializer from '@/components/LocaleInitializer';
 import ResizeObserverFix from '@/components/ResizeObserverFix';
@@ -9,7 +9,8 @@ import ChromeIOSOrientationFix from '@/components/ChromeIOSOrientationFix';
 import Script from 'next/script';
 import { Analytics } from "@vercel/analytics/next";
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ subsets: ["latin"], variable: "--font-body" });
+const manrope = Manrope({ subsets: ["latin"], variable: "--font-display" });
 
 export const metadata: Metadata = {
     title: "Cafe 43",
@@ -51,7 +52,7 @@ export default async function RootLayout({
                     {chromeIOSScript}
                 </Script>
             </head>
-            <body className={inter.className}>
+            <body className={`${inter.variable} ${manrope.variable} ${inter.className}`}>
                 <ResizeObserverFix />
                 <ChromeIOSOrientationFix />
                 <NextIntlClientProvider locale={locale} messages={messages}>

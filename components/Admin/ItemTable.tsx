@@ -65,7 +65,7 @@ interface ItemTableProps {
 export default function ItemTable({ initialItems, categories }: ItemTableProps) {
     const t = useTranslations('Admin');
     const locale = useLocale();
-    const supabase = createClient();
+    const supabase = useMemo(() => createClient(), []);
     const router = useRouter();
     const [items, setItems] = useState(initialItems);
 
@@ -193,9 +193,7 @@ export default function ItemTable({ initialItems, categories }: ItemTableProps) 
                             .upsert(updates, { onConflict: 'id' });
 
                         if (error) throw error;
-                        console.log('Order updated');
                     } catch (err) {
-                        console.error('Failed to save order:', err);
                         alert('Failed to save order. Rolling back...');
                         setItems(prevItems); // Rollback
                     }
@@ -304,9 +302,7 @@ export default function ItemTable({ initialItems, categories }: ItemTableProps) 
             try {
                 const compressedFile = await imageCompression(file, options);
                 file = compressedFile;
-                console.log(`Compressed size: ${file.size / 1024 / 1024}MB`);
-            } catch (error) {
-                console.error("Compression error:", error);
+            } catch {
             }
 
             const fileExt = 'jpg';
@@ -362,6 +358,7 @@ export default function ItemTable({ initialItems, categories }: ItemTableProps) 
                 if (!dirtyFields.has('title_ru') && (!titles.ru || titles.ru === originalTitles.ru)) {
                     const res = await fetch('/api/translate', {
                         method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ text: titles.ge, target: 'ru', format: 'title' }),
                     }).then(r => r.json());
                     if (res.text) newTitles.ru = res.text;
@@ -369,6 +366,7 @@ export default function ItemTable({ initialItems, categories }: ItemTableProps) 
                 if (!dirtyFields.has('title_en') && (!titles.en || titles.en === originalTitles.en)) {
                     const res = await fetch('/api/translate', {
                         method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ text: titles.ge, target: 'en', format: 'title' }),
                     }).then(r => r.json());
                     if (res.text) newTitles.en = res.text;
@@ -376,11 +374,11 @@ export default function ItemTable({ initialItems, categories }: ItemTableProps) 
             } else {
                 // Initial creation fallback
                 if (!newTitles.ru.trim()) {
-                    const res = await fetch('/api/translate', { method: 'POST', body: JSON.stringify({ text: titles.ge, target: 'ru', format: 'title' }) }).then(r => r.json());
+                    const res = await fetch('/api/translate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text: titles.ge, target: 'ru', format: 'title' }) }).then(r => r.json());
                     if (res.text) newTitles.ru = res.text;
                 }
                 if (!newTitles.en.trim()) {
-                    const res = await fetch('/api/translate', { method: 'POST', body: JSON.stringify({ text: titles.ge, target: 'en', format: 'title' }) }).then(r => r.json());
+                    const res = await fetch('/api/translate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text: titles.ge, target: 'en', format: 'title' }) }).then(r => r.json());
                     if (res.text) newTitles.en = res.text;
                 }
             }
@@ -388,21 +386,21 @@ export default function ItemTable({ initialItems, categories }: ItemTableProps) 
             // Handle Descriptions
             if (geDescChanged && descriptions.ge.trim()) {
                 if (!dirtyFields.has('description_ru') && (!descriptions.ru || descriptions.ru === originalDescriptions.ru)) {
-                    const res = await fetch('/api/translate', { method: 'POST', body: JSON.stringify({ text: descriptions.ge, target: 'ru' }) }).then(r => r.json());
+                    const res = await fetch('/api/translate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text: descriptions.ge, target: 'ru' }) }).then(r => r.json());
                     if (res.text) newDescriptions.ru = res.text;
                 }
                 if (!dirtyFields.has('description_en') && (!descriptions.en || descriptions.en === originalDescriptions.en)) {
-                    const res = await fetch('/api/translate', { method: 'POST', body: JSON.stringify({ text: descriptions.ge, target: 'en' }) }).then(r => r.json());
+                    const res = await fetch('/api/translate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text: descriptions.ge, target: 'en' }) }).then(r => r.json());
                     if (res.text) newDescriptions.en = res.text;
                 }
             } else if (descriptions.ge.trim()) {
                 // Initial creation fallback
                 if (!newDescriptions.ru.trim()) {
-                    const res = await fetch('/api/translate', { method: 'POST', body: JSON.stringify({ text: descriptions.ge, target: 'ru' }) }).then(r => r.json());
+                    const res = await fetch('/api/translate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text: descriptions.ge, target: 'ru' }) }).then(r => r.json());
                     if (res.text) newDescriptions.ru = res.text;
                 }
                 if (!newDescriptions.en.trim()) {
-                    const res = await fetch('/api/translate', { method: 'POST', body: JSON.stringify({ text: descriptions.ge, target: 'en' }) }).then(r => r.json());
+                    const res = await fetch('/api/translate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text: descriptions.ge, target: 'en' }) }).then(r => r.json());
                     if (res.text) newDescriptions.en = res.text;
                 }
             }

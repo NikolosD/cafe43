@@ -11,15 +11,15 @@ const intlMiddleware = createMiddleware({
 export async function middleware(request: NextRequest) {
     const pathname = request.nextUrl.pathname;
 
+    // Admin routes FIRST: supabase auth required (must check before broad string matching)
+    if (pathname.includes("/admin")) {
+        const response = NextResponse.next();
+        return await updateSession(request, response);
+    }
+
     // Public menu routes: только intl middleware, без supabase (быстрее)
     if (pathname.includes("/menu") || pathname === "/" || pathname === "/ru" || pathname === "/en" || pathname === "/ge") {
         return intlMiddleware(request);
-    }
-
-    // Admin routes: supabase auth required
-    if (pathname.startsWith("/admin")) {
-        const response = NextResponse.next();
-        return await updateSession(request, response);
     }
 
     // Остальные маршруты - только intl

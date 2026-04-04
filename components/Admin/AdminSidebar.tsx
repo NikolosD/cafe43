@@ -8,7 +8,7 @@ import { LayoutDashboard, UtensilsCrossed, LogOut, Coffee, Menu, Settings, QrCod
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { getUserRole } from '@/lib/db';
 
 interface AdminSidebarProps {
@@ -19,7 +19,7 @@ export default function AdminSidebar({ className }: AdminSidebarProps) {
     const pathname = usePathname();
     const router = useRouter();
     const t = useTranslations('Admin');
-    const supabase = createClient();
+    const supabase = useMemo(() => createClient(), []);
     const [isSuperAdmin, setIsSuperAdmin] = useState(false);
 
     const handleLogout = async () => {
@@ -30,14 +30,10 @@ export default function AdminSidebar({ className }: AdminSidebarProps) {
 
     useEffect(() => {
         const checkRole = async () => {
-            console.log('[AdminSidebar] Checking role...');
             const { data: { user } } = await supabase.auth.getUser();
-            console.log('[AdminSidebar] User:', user?.id);
             if (user) {
                 const role = await getUserRole(supabase, user.id);
-                console.log('[AdminSidebar] Role:', role);
                 setIsSuperAdmin(role?.role === 'superadmin');
-                console.log('[AdminSidebar] isSuperAdmin:', role?.role === 'superadmin');
             }
         };
         checkRole();

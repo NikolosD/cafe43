@@ -19,6 +19,17 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
+        // Verify admin role
+        const { data: roleData } = await supabase
+            .from('user_roles')
+            .select('role')
+            .eq('user_id', user.id)
+            .single();
+
+        if (!roleData || (roleData.role !== 'admin' && roleData.role !== 'superadmin')) {
+            return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+        }
+
         const { text, target, source = 'ka', format } = await request.json();
 
         if (!text) {
@@ -37,8 +48,7 @@ export async function POST(request: Request) {
         }
 
         return NextResponse.json({ text: translatedText });
-    } catch (error: any) {
-        console.error('Translation error:', error);
-        return NextResponse.json({ error: 'Translation failed', details: error.message }, { status: 500 });
+    } catch {
+        return NextResponse.json({ error: 'Translation failed' }, { status: 500 });
     }
 }

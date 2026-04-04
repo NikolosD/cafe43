@@ -44,20 +44,19 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Failed to create user' }, { status: 500 });
         }
 
-        if (role === 'superadmin') {
+        if (role === 'admin' || role === 'superadmin') {
             const { error: roleError } = await adminSupabase
                 .from('user_roles')
-                .update({ role })
-                .eq('user_id', authData.user.id);
+                .upsert({ user_id: authData.user.id, role }, { onConflict: 'user_id' });
 
             if (roleError) {
-                return NextResponse.json({ error: roleError.message }, { status: 500 });
+                return NextResponse.json({ error: 'Failed to assign role' }, { status: 500 });
             }
         }
 
         return NextResponse.json({ user: authData.user }, { status: 201 });
-    } catch (error: any) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+    } catch {
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
 }
 
@@ -83,11 +82,11 @@ export async function DELETE(request: NextRequest) {
         const { error } = await adminSupabase.auth.admin.deleteUser(userId);
 
         if (error) {
-            return NextResponse.json({ error: error.message }, { status: 500 });
+            return NextResponse.json({ error: 'Failed to delete user' }, { status: 500 });
         }
 
         return NextResponse.json({ success: true }, { status: 200 });
-    } catch (error: any) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+    } catch {
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
 }

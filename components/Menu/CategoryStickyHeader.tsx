@@ -1,7 +1,6 @@
 'use client';
 
 import { Link } from '@/lib/navigation';
-import { useLocale } from 'next-intl';
 import { useCallback } from 'react';
 import Icon from '@/components/Icon';
 import { getCategoryIcon } from '@/lib/categoryIcons';
@@ -12,8 +11,6 @@ interface CategoryStickyHeaderProps {
 }
 
 export default function CategoryStickyHeader({ categoryTitle, icon }: CategoryStickyHeaderProps) {
-    const locale = useLocale();
-
     const handleBackClick = useCallback((e: React.MouseEvent) => {
         // Instant scroll to top before navigation
         window.scrollTo(0, 0);

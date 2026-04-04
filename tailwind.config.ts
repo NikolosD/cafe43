@@ -22,8 +22,8 @@ const config = {
                 'landscape': {'raw': '(orientation: landscape)'},
             },
             fontFamily: {
-                sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
-                display: ['Manrope', 'Inter', 'system-ui', 'sans-serif'],
+                sans: ['var(--font-body)', 'system-ui', '-apple-system', 'sans-serif'],
+                display: ['var(--font-display)', 'var(--font-body)', 'system-ui', 'sans-serif'],
             },
             colors: {
                 border: "hsl(var(--border))",

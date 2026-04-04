@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import { cn } from "@/lib/utils";
-import { Sparkles } from 'lucide-react';
+import { Sparkles, Scale } from 'lucide-react';
 import Icon from '@/components/Icon';
 import { Item } from '@/lib/db';
 import { useTranslations } from 'next-intl';
@@ -14,7 +14,7 @@ interface MenuItemProps {
 
 export default function MenuItem({ item, onClick }: MenuItemProps) {
     const ta = useTranslations('Admin');
-    const { title, description, price, image_url: imageUrl, is_active: isActive = true } = item;
+    const { title, description, price, weight, image_url: imageUrl, is_active: isActive = true } = item;
 
     return (
         <button
@@ -65,6 +65,13 @@ export default function MenuItem({ item, onClick }: MenuItemProps) {
                     <p className="text-[13px] leading-relaxed text-muted-foreground mt-1.5 line-clamp-2 group-hover:text-muted-foreground/80 transition-colors">
                         {description}
                     </p>
+                )}
+
+                {weight && (
+                    <div className="flex items-center gap-1 mt-1.5 text-muted-foreground/70">
+                        <Scale className="w-3 h-3" />
+                        <span className="text-[12px] font-medium">{weight}</span>
+                    </div>
                 )}
 
                 {!isActive && (

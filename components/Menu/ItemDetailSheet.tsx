@@ -186,10 +186,9 @@ export default function ItemDetailSheet({ item, isOpen, onClose }: ItemDetailShe
                                     </div>
                                 </div>
                                 <div
-                                    className="text-2xl font-bold text-white whitespace-nowrap px-5 py-2.5 rounded-2xl lg:mr-10"
-                                    style={{ backgroundColor: 'hsl(15 75% 55%)' }}
+                                    className="text-2xl font-bold text-white whitespace-nowrap px-5 py-2.5 rounded-2xl lg:mr-10 bg-primary"
                                 >
-                                    {item.price} ₾
+                                    {Math.floor(item.price) === item.price ? item.price : item.price.toFixed(2)} ₾
                                 </div>
                             </div>
 
