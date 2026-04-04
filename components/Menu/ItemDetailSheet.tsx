@@ -126,7 +126,7 @@ export default function ItemDetailSheet({ item, isOpen, onClose }: ItemDetailShe
                         )}
 
                         {/* Gradient fade into content */}
-                        <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-white to-transparent lg:hidden z-20" />
+                        <div className="absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-white/60 to-transparent lg:hidden z-20" />
                         <div className="hidden lg:block absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-white/60 to-transparent z-20" />
 
                         {/* Top Badges */}
