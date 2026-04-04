@@ -5,9 +5,9 @@ import { ChevronRight, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 
 const LANGUAGES = [
-    { code: 'ge', flag: '🇬🇪', name: 'ქართული', sub: 'Georgian' },
-    { code: 'en', flag: '🇬🇧', name: 'English', sub: 'English' },
-    { code: 'ru', flag: '🇷🇺', name: 'Русский', sub: 'Russian' },
+    { code: 'ge', flagCode: 'ge', name: 'ქართული', sub: 'Georgian' },
+    { code: 'en', flagCode: 'gb', name: 'English', sub: 'English' },
+    { code: 'ru', flagCode: 'ru', name: 'Русский', sub: 'Russian' },
 ] as const;
 
 export default function LanguageSplashPage() {
@@ -24,9 +24,9 @@ export default function LanguageSplashPage() {
 
             <div className="max-w-sm w-full space-y-16 relative z-10">
                 <div className="text-center space-y-4">
-                    <h1 className="text-4xl font-display font-light uppercase text-foreground/80">
-                        <span className="tracking-[0.2em]">Cafe</span>{" "}
-                        <span className="tracking-normal">43</span>
+                    <h1 className="text-4xl uppercase text-foreground/80">
+                        <span className="font-display font-light tracking-[0.2em]">Cafe</span>{" "}
+                        <span className="font-sans font-medium tracking-tight">43</span>
                     </h1>
                     <div className="flex items-center justify-center gap-4">
                         <div className="h-px w-10 bg-black/10" />
@@ -38,7 +38,7 @@ export default function LanguageSplashPage() {
                 </div>
 
                 <div className="space-y-0 border-t border-black/[0.06]">
-                    {LANGUAGES.map(({ code, flag, name, sub }) => (
+                    {LANGUAGES.map(({ code, flagCode, name, sub }) => (
                         <Link
                             key={code}
                             href="/menu"
@@ -47,7 +47,7 @@ export default function LanguageSplashPage() {
                             className={`group flex items-center justify-between py-4 px-1 border-b border-black/[0.06] transition-all duration-200 active:scale-[0.98] ${loadingLocale && loadingLocale !== code ? 'opacity-20 pointer-events-none' : ''}`}
                         >
                             <div className="flex items-center gap-3">
-                                <span className="text-lg">{flag}</span>
+                                <span className={`fi fi-${flagCode} fis`} style={{ width: 22, height: 22, borderRadius: 4, fontSize: 22 }} />
                                 <div>
                                     <p className="font-display text-[15px] font-light text-foreground/80 tracking-wide">{name}</p>
                                     <p className="text-[10px] text-foreground/30 tracking-wider uppercase">{sub}</p>

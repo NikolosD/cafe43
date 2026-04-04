@@ -10,9 +10,9 @@ import { cn } from '@/lib/utils';
 import Icon from '@/components/Icon';
 
 const languages = [
-    { code: 'ge', label: 'ქართული', flag: '🇬🇪' },
-    { code: 'en', label: 'English', flag: '🇬🇧' },
-    { code: 'ru', label: 'Русский', flag: '🇷🇺' },
+    { code: 'ge', label: 'ქართული', flagCode: 'ge' },
+    { code: 'en', label: 'English', flagCode: 'gb' },
+    { code: 'ru', label: 'Русский', flagCode: 'ru' },
 ];
 
 export default function LanguageSwitcher() {
@@ -52,7 +52,7 @@ export default function LanguageSwitcher() {
                         )}
                     </div>
                     <span className="hidden sm:inline">{currentLang?.label}</span>
-                    <span className="sm:hidden">{currentLang?.flag}</span>
+                    <span className={`sm:hidden fi fi-${currentLang?.flagCode} fis`} style={{ width: 16, height: 16, borderRadius: 2, fontSize: 16 }} />
                 </div>
             </SelectTrigger>
             <SelectContent
@@ -71,7 +71,7 @@ export default function LanguageSwitcher() {
                     >
                         <div className="flex items-center justify-between w-full gap-4 py-1">
                             <div className="flex items-center gap-3">
-                                <span className="text-lg">{lang.flag}</span>
+                                <span className={`fi fi-${lang.flagCode} fis`} style={{ width: 20, height: 20, borderRadius: 3, fontSize: 20 }} />
                                 <span className="font-medium">{lang.label}</span>
                             </div>
                             {locale === lang.code && (

@@ -28,6 +28,7 @@
     "browser-image-compression": "^2.0.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.0",
+    "flag-icons": "^7.5.0",
     "google-translate-api-x": "^10.7.2",
     "html-to-image": "^1.11.13",
     "lucide-react": "^0.330.0",
