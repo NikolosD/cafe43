@@ -48,7 +48,7 @@ import {
     useSensors,
     DragEndEvent
 } from '@dnd-kit/core';
-import imageCompression from 'browser-image-compression';
+import { uploadImage, deleteImage } from '@/lib/uploadClient';
 import {
     arrayMove,
     SortableContext,
@@ -135,18 +135,8 @@ export default function CategoryTable({ initialCategories }: CategoryTableProps)
     const [isCropperOpen, setIsCropperOpen] = useState(false);
     const [pendingImage, setPendingImage] = useState<string | null>(null);
 
-    // Helper to get filename from URL
-    const getStoragePath = (url: string | null) => {
-        if (!url) return null;
-        const parts = url.split('/');
-        return parts[parts.length - 1];
-    };
-
     const deleteOldImage = async (url: string | null) => {
-        const path = getStoragePath(url);
-        if (path) {
-            await supabase.storage.from('menu-images').remove([path]);
-        }
+        await deleteImage(url);
     };
 
     // Filter Logic
@@ -214,39 +204,9 @@ export default function CategoryTable({ initialCategories }: CategoryTableProps)
         setUploading(true);
 
         try {
-            let file = new File([croppedBlob], 'category.jpg', { type: 'image/jpeg' });
+            const file = new File([croppedBlob], 'category.jpg', { type: 'image/jpeg' });
+            const publicUrl = await uploadImage(file);
 
-            // Image compression options
-            const options = {
-                maxSizeMB: 0.8,
-                maxWidthOrHeight: 1200,
-                useWebWorker: true
-            };
-
-            try {
-                const compressedFile = await imageCompression(file, options);
-                file = compressedFile;
-            } catch (error) {
-                console.error("Compression error:", error);
-            }
-
-            const fileExt = 'jpg';
-            const fileName = `${crypto.randomUUID()}.${fileExt}`;
-            const filePath = `${fileName}`;
-
-            const { error: uploadError } = await supabase.storage
-                .from('menu-images')
-                .upload(filePath, file);
-
-            if (uploadError) {
-                throw uploadError;
-            }
-
-            const { data: { publicUrl } } = supabase.storage
-                .from('menu-images')
-                .getPublicUrl(filePath);
-
-            // If we already uploaded something else in this session, delete it
             if (imageUrl && imageUrl !== originalImageUrl) {
                 await deleteOldImage(imageUrl);
             }

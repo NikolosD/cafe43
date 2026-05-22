@@ -47,7 +47,7 @@ import {
     useSensors,
     DragEndEvent
 } from '@dnd-kit/core';
-import imageCompression from 'browser-image-compression';
+import { uploadImage, deleteImage } from '@/lib/uploadClient';
 import {
     arrayMove,
     SortableContext,
@@ -115,23 +115,8 @@ export default function ItemTable({ initialItems, categories }: ItemTableProps) 
     const [itemImages, setItemImages] = useState<{ id: string; image_url: string; sort: number }[]>([]);
     const [uploadingExtra, setUploadingExtra] = useState(false);
 
-    // Helper to get filename from URL
-    const getStoragePath = (url: string | null) => {
-        if (!url) return null;
-        try {
-            const pathname = new URL(url).pathname;
-            return pathname.split('/').pop() || null;
-        } catch {
-            const parts = url.split('/');
-            return parts[parts.length - 1].split('?')[0];
-        }
-    };
-
     const deleteOldImage = async (url: string | null) => {
-        const path = getStoragePath(url);
-        if (path) {
-            await supabase.storage.from('menu-images').remove([path]);
-        }
+        await deleteImage(url);
     };
 
     const filteredItems = useMemo(() => {
@@ -291,38 +276,9 @@ export default function ItemTable({ initialItems, categories }: ItemTableProps) 
         setUploading(true);
 
         try {
-            let file = new File([croppedBlob], 'item.jpg', { type: 'image/jpeg' });
+            const file = new File([croppedBlob], 'item.jpg', { type: 'image/jpeg' });
+            const publicUrl = await uploadImage(file);
 
-            // Image compression options
-            const options = {
-                maxSizeMB: 0.8,
-                maxWidthOrHeight: 1200,
-                useWebWorker: true
-            };
-
-            try {
-                const compressedFile = await imageCompression(file, options);
-                file = compressedFile;
-            } catch {
-            }
-
-            const fileExt = 'jpg';
-            const fileName = `${crypto.randomUUID()}.${fileExt}`;
-            const filePath = `${fileName}`;
-
-            const { error: uploadError } = await supabase.storage
-                .from('menu-images')
-                .upload(filePath, file);
-
-            if (uploadError) {
-                throw uploadError;
-            }
-
-            const { data: { publicUrl } } = supabase.storage
-                .from('menu-images')
-                .getPublicUrl(filePath);
-
-            // If we already uploaded something else in this session, delete it
             if (imageUrl && imageUrl !== originalImageUrl) {
                 await deleteOldImage(imageUrl);
             }
@@ -356,21 +312,7 @@ export default function ItemTable({ initialItems, categories }: ItemTableProps) 
 
         setUploadingExtra(true);
         try {
-            const fileName = `${crypto.randomUUID()}.jpg`;
-            const options = { maxSizeMB: 0.8, maxWidthOrHeight: 1200, useWebWorker: true };
-            let processedFile: File = new File([file], fileName, { type: 'image/jpeg' });
-            try {
-                processedFile = await imageCompression(processedFile, options);
-            } catch {}
-
-            const { error: uploadError } = await supabase.storage
-                .from('menu-images')
-                .upload(fileName, processedFile);
-            if (uploadError) throw uploadError;
-
-            const { data: { publicUrl } } = supabase.storage
-                .from('menu-images')
-                .getPublicUrl(fileName);
+            const publicUrl = await uploadImage(file);
 
             const nextSort = itemImages.length > 0 ? Math.max(...itemImages.map(i => i.sort)) + 10 : 10;
             const { data: newImg, error: dbError } = await supabase
