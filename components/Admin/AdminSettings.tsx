@@ -3,6 +3,7 @@
 import { useState, useCallback, useMemo } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { adminUpdateSettings, adminUpdateDeliveryLink } from '@/lib/db';
+import { revalidateMenu } from '@/lib/uploadClient';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -71,6 +72,7 @@ export default function AdminSettings({ initialSettings, initialDeliveryLinks }:
                 }
             }
 
+            await revalidateMenu();
             alert(t('settings_saved'));
         } catch (error) {
             console.error(error);

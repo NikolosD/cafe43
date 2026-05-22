@@ -34,3 +34,7 @@ export async function deleteImage(url: string | null) {
         body: JSON.stringify({ url }),
     }).catch(() => { /* best-effort cleanup */ });
 }
+
+export async function revalidateMenu() {
+    await fetch('/api/revalidate', { method: 'POST' }).catch(() => { /* best-effort */ });
+}

@@ -1,4 +1,11 @@
 import { SupabaseClient } from '@supabase/supabase-js';
+import { unstable_cache, revalidateTag } from 'next/cache';
+import { publicSupabase } from './supabase/public';
+
+const MENU_TAG = 'menu';
+const SETTINGS_TAG = 'settings';
+const DELIVERY_TAG = 'delivery-links';
+const REVALIDATE_SECONDS = 60;
 
 // Types (simplified for this file, ideally in types/index.ts)
 export type Category = {
@@ -131,6 +138,31 @@ export async function getDeliveryLinks(supabase: SupabaseClient, locale: string)
         links[link.platform] = link.url;
     });
     return links;
+}
+
+// Cached public readers (60s TTL, tag-revalidated by admin upserts)
+export const getCachedPublicMenu = unstable_cache(
+    async (locale: string, categoryId?: string) => getPublicMenu(publicSupabase, locale, categoryId),
+    ['public-menu'],
+    { revalidate: REVALIDATE_SECONDS, tags: [MENU_TAG] },
+);
+
+export const getCachedSettings = unstable_cache(
+    async () => getSettings(publicSupabase),
+    ['public-settings'],
+    { revalidate: REVALIDATE_SECONDS, tags: [SETTINGS_TAG] },
+);
+
+export const getCachedDeliveryLinks = unstable_cache(
+    async (locale: string) => getDeliveryLinks(publicSupabase, locale),
+    ['public-delivery-links'],
+    { revalidate: REVALIDATE_SECONDS, tags: [DELIVERY_TAG] },
+);
+
+export function invalidateMenuCache() {
+    revalidateTag(MENU_TAG);
+    revalidateTag(SETTINGS_TAG);
+    revalidateTag(DELIVERY_TAG);
 }
 
 export async function adminUpdateSettings(supabase: SupabaseClient, settings: any) {
