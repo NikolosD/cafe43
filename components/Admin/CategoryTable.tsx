@@ -48,7 +48,7 @@ import {
     useSensors,
     DragEndEvent
 } from '@dnd-kit/core';
-import { uploadImage, deleteImage } from '@/lib/uploadClient';
+import { uploadImage, deleteImage, revalidateMenu } from '@/lib/uploadClient';
 import {
     arrayMove,
     SortableContext,
@@ -302,6 +302,7 @@ export default function CategoryTable({ initialCategories }: CategoryTableProps)
                 await deleteOldImage(originalImageUrl);
             }
 
+            await revalidateMenu();
             setIsOpen(false);
             router.refresh();
         } catch (error) {
@@ -322,6 +323,7 @@ export default function CategoryTable({ initialCategories }: CategoryTableProps)
                 await deleteOldImage(category.image_url);
             }
 
+            await revalidateMenu();
             setCategories(categories.filter(c => c.id !== category.id));
             router.refresh();
         } catch (e) {

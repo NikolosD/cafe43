@@ -47,7 +47,7 @@ import {
     useSensors,
     DragEndEvent
 } from '@dnd-kit/core';
-import { uploadImage, deleteImage } from '@/lib/uploadClient';
+import { uploadImage, deleteImage, revalidateMenu } from '@/lib/uploadClient';
 import {
     arrayMove,
     SortableContext,
@@ -322,6 +322,7 @@ export default function ItemTable({ initialItems, categories }: ItemTableProps) 
                 .single();
             if (dbError) throw dbError;
 
+            await revalidateMenu();
             setItemImages(prev => [...prev, newImg]);
         } catch {
             alert('Error uploading extra image');
@@ -335,6 +336,7 @@ export default function ItemTable({ initialItems, categories }: ItemTableProps) 
         try {
             await supabase.from('item_images').delete().eq('id', imageId);
             await deleteOldImage(imageUrl);
+            await revalidateMenu();
             setItemImages(prev => prev.filter(i => i.id !== imageId));
         } catch {
             alert('Error deleting image');
@@ -445,6 +447,7 @@ export default function ItemTable({ initialItems, categories }: ItemTableProps) 
                 await deleteOldImage(originalImageUrl);
             }
 
+            await revalidateMenu();
             setIsOpen(false);
             router.refresh();
         } catch (error) {
@@ -465,6 +468,7 @@ export default function ItemTable({ initialItems, categories }: ItemTableProps) 
                 await deleteOldImage(item.image_url);
             }
 
+            await revalidateMenu();
             setItems(items.filter(i => i.id !== item.id));
             router.refresh();
         } catch (e) {

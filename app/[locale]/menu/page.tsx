@@ -1,6 +1,4 @@
-import { cookies } from 'next/headers';
-import { createClient } from '@/lib/supabase/server';
-import { getPublicMenu, getSettings, getDeliveryLinks } from '@/lib/db';
+import { getCachedPublicMenu, getCachedSettings, getCachedDeliveryLinks } from '@/lib/db';
 import MenuHeader from '@/components/Menu/MenuHeader';
 import MenuList from '@/components/Menu/MenuList';
 import MenuFooter from '@/components/Menu/MenuFooter';
@@ -14,16 +12,12 @@ export default async function MenuPage({
     params: { locale: string };
     searchParams: { category?: string };
 }) {
-    const cookieStore = cookies();
-    const supabase = createClient(cookieStore);
-
     const activeCategoryId = searchParams.category;
 
-    // Parallel data fetching
     const [menu, settings, deliveryLinks] = await Promise.all([
-        getPublicMenu(supabase, locale, activeCategoryId),
-        getSettings(supabase),
-        getDeliveryLinks(supabase, locale),
+        getCachedPublicMenu(locale, activeCategoryId),
+        getCachedSettings(),
+        getCachedDeliveryLinks(locale),
     ]);
 
     const activeCategory = activeCategoryId ? menu.find((c: any) => c.id === activeCategoryId) : null;
