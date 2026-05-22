@@ -7,10 +7,8 @@ const nextConfig = {
     images: {
         unoptimized: true,
         remotePatterns: [
-            {
-                protocol: 'https',
-                hostname: 'gqfaoovnwlpcpshwdtea.supabase.co',
-            },
+            { protocol: 'https', hostname: 'cdn.cafe43.ge' },
+            { protocol: 'https', hostname: 'gqfaoovnwlpcpshwdtea.supabase.co' },
         ],
     },
     async headers() {
